@@ -23,7 +23,8 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken') || '';
-      const res = await fetch(`http://localhost:4000/api/fleet/requests/details`, {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "")
+      const res = await fetch(`${apiBase}/api/fleet/requests/details`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

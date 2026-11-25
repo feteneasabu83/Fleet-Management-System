@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     // Forward request to your backend authentication endpoint
-    const response = await forwardToBackend(req, "/auth/login");
+    const response = await forwardToBackend(req, "/api/auth/login");
 
     // Return the backend response directly
     return response;

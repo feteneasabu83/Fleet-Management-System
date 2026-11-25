@@ -103,7 +103,8 @@ export default function DepartmentHeadPage() {
   const uploadImageAndGetUrl = async (file: File): Promise<string> => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch('http://localhost:4000/api/upload/image', {
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "")
+    const res = await fetch(`${apiBase}/api/upload/image`, {
       method: 'POST',
       body: form,
     })
