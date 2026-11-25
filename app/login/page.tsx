@@ -49,6 +49,9 @@ function LoginPageInner() {
         localStorage.setItem("token", val)
         localStorage.setItem("accessToken", val)
         localStorage.setItem("jwt", val)
+        // Set auth cookie on the frontend domain so middleware.ts allows navigation
+        const secureFlag = window.location.protocol === "https:" ? "; Secure" : ""
+        document.cookie = `access_token=${encodeURIComponent(val)}; path=/; max-age=86400; SameSite=Lax${secureFlag}`
         // Persist session (token + backend user and decoded payload)
         try {
           saveAuthSession(val, data?.user ?? null)
