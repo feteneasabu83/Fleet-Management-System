@@ -300,8 +300,37 @@ svg {
   }
 }
 
+/* Sidebar width tiers — covers Surface Pro 10 (~1440x960 effective),
+   tablets, small laptops, and phones */
+.app-sidebar {
+  width: 280px;
+}
+
+/* Small laptops & tablets landscape (e.g. Surface Pro 10, iPad Pro 12.9") */
+@media (max-width: 1440px) {
+  .app-sidebar {
+    width: 240px;
+  }
+
+  main {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Tablets portrait & small laptops */
+@media (max-width: 1180px) {
+  .app-sidebar {
+    width: 220px;
+  }
+}
+
 /* Tablets & small laptops: keep comfortable spacing */
 @media (min-width: 769px) and (max-width: 1024px) {
+  .app-sidebar {
+    width: 200px;
+  }
+
   main {
     padding-left: 8px;
     padding-right: 8px;

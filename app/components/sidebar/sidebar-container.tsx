@@ -6,7 +6,6 @@ import { useIsMobile } from "@/app/hooks/use-mobile";
 import { Menu, X } from "lucide-react";
 
 const SIDEBAR_STYLE: React.CSSProperties = {
-  width: 280,
   flexShrink: 0,
   borderRight: "1px solid rgba(148, 163, 184, 0.12)",
   background: "linear-gradient(180deg, #0b1220 0%, #0f172a 55%, #111c33 100%)",
@@ -75,7 +74,7 @@ export default function SidebarContainer() {
 
   // Desktop: static sidebar
   return (
-    <div style={SIDEBAR_STYLE}>
+    <div className="app-sidebar" style={SIDEBAR_STYLE}>
       <VerticalNavigation />
     </div>
   );
