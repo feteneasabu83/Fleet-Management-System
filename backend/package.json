@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Backend API for Ethiopian Civil Service Commission Helpdesk and Knowledge Base",
   "main": "dist/main.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
