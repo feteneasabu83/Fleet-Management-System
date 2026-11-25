@@ -241,3 +241,80 @@ label:has(+ textarea[required])::after {
   color: #b91c1c; /* red-700 */
   font-weight: 700;
 }
+
+/* ============================================================
+   Global mobile responsiveness (all devices, small -> large)
+   ============================================================ */
+
+/* Prevent accidental horizontal page scroll on any device */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Fluid media: images/videos/canvas never exceed their container */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables scroll horizontally inside their container instead of
+   stretching or clipping the page on narrow screens */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Keep form controls usable on touch devices */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+  }
+
+  /* Tighter page padding on small phones */
+  main {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* Very small phones (<= 380px, e.g. older/small Android) */
+@media (max-width: 380px) {
+  body {
+    font-size: 14px;
+  }
+
+  button,
+  a,
+  input,
+  select {
+    min-height: 40px;
+  }
+}
+
+/* Tablets & small laptops: keep comfortable spacing */
+@media (min-width: 769px) and (max-width: 1024px) {
+  main {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Respect users who prefer reduced data / older devices */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
