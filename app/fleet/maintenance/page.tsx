@@ -148,7 +148,7 @@ export default function MaintenancePage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('schedule')
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [showNewRequestModal, setShowNewRequestModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -919,8 +919,8 @@ export default function MaintenancePage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900"></h1>
-            <p className="text-gray-600 mt-2"></p>
+            <h1 className="text-3xl font-bold text-gray-900">የጥገና ቡድን ዳሽቦርድ</h1>
+            <p className="text-gray-600 mt-2">Maintenance Team Dashboard</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm">
@@ -942,6 +942,16 @@ export default function MaintenancePage() {
                 Export
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                resetNewRequestForm()
+                setShowNewRequestModal(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              + የጥገና ጥያቄ
+            </button>
             <Link 
               href="/fleet" 
               className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -952,9 +962,51 @@ export default function MaintenancePage() {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="flex gap-1 overflow-x-auto -mb-px" aria-label="Maintenance tabs">
+          {([
+            { id: 'dashboard', label: 'ዳሽቦርድ' },
+            { id: 'schedule', label: 'የጥገና መርሃግብር' },
+            { id: 'requests', label: 'ጥያቄዎች' },
+            { id: 'vehicles', label: 'መኪናዎች' },
+          ] as const).map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       {/* Tab Content */}
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { label: 'ጠቅላላ ጥያቄዎች', value: maintenanceStats.totalRequests, color: 'text-gray-900' },
+              { label: 'በመጠባበቅ ላይ', value: maintenanceStats.pendingRequests, color: 'text-yellow-600' },
+              { label: 'በሂደት ላይ', value: maintenanceStats.inProgressRequests, color: 'text-blue-600' },
+              { label: 'የተጠናቀቁ', value: maintenanceStats.completedRequests, color: 'text-green-600' },
+              { label: 'በጥገና ላይ ያሉ መኪናዎች', value: maintenanceStats.vehiclesInMaintenance, color: 'text-orange-600' },
+              { label: 'ጠቅላላ ወጪ', value: `$${maintenanceStats.totalCost.toLocaleString()}`, color: 'text-purple-600' },
+            ].map(stat => (
+              <div key={stat.label} className="bg-white rounded-lg shadow border p-4">
+                <p className="text-xs text-gray-500 truncate">{stat.label}</p>
+                <p className={`text-xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Maintenance Team Assignment */}
           <div className="bg-white rounded-lg shadow border">
             <div className="px-6 py-4 border-b">

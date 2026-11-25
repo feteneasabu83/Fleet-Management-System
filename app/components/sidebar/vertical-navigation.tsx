@@ -40,7 +40,7 @@ export default function VerticalNavigation() {
       const roles = getCurrentUserRoles()?.map((r) => String(r).toLowerCase()) || [];
       setIsAdmin(roles.includes("admin"));
       setIsFleetManag(roles.includes("fleet_manager") || roles.includes("manager"));
-      setIsMaintenanceTeam(roles.includes("maintenance_team"));
+      setIsMaintenanceTeam(roles.includes("maintenance_team") || roles.includes("maintenace_team"));
       setIsHr(roles.includes("hr"));
       setIsDeptHead(roles.includes("department_head") || roles.includes("women_social_inclusion"));
       setIsEndUser(roles.includes("employee"));
