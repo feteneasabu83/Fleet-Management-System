@@ -53,7 +53,7 @@ export async function forwardToBackend(req: NextRequest, targetPath: string, ini
   const resHeaders = new Headers();
   backendResp.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
-    if (["transfer-encoding", "connection"].includes(lower)) return;
+    if (["transfer-encoding", "connection", "content-length", "content-encoding"].includes(lower)) return;
     resHeaders.set(key, value);
   });
 
