@@ -6,10 +6,7 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/app/components/dashboard-layout";
 import { AuthGuard } from "@/app/components/auth-guard";
 import { getCurrentUserId, getCurrentUserPrimaryRole } from "@/app/lib/auth";
-import { listAdvertisements } from "@/app/lib/advertisements-api";
-import { apiGet } from "@/app/lib/api";
 import { listFleetRequests } from "@/app/lib/fleet-api";
-import { articlesApi } from "@/app/lib/articles-api";
 
 export default function EndUserDashboardPage() {
   const router = useRouter();
@@ -17,14 +14,12 @@ export default function EndUserDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [counts, setCounts] = useState({
-    myOpenTickets: 0,
-    announcements: 0,
-    fleetRequests: 0,
-    myArticles: 0,
+    pending: 0,
+    approved: 0,
+    completed: 0,
+    rejected: 0,
+    total: 0,
   });
-  const [recentAnnouncements, setRecentAnnouncements] = useState<
-    Array<{ id: string; title: string; createdAt?: string | null }>
-  >([]);
 
   // If the logged-in user is a Department Head, send them to the Department Head dashboard instead
   useEffect(() => {
@@ -38,77 +33,28 @@ export default function EndUserDashboardPage() {
   const loadCounts = useCallback(async () => {
     setError(null);
     try {
-      // 1) My open tickets (IN_PROGRESS or PENDING status, scoped to current user)
-      let myOpenTickets = 0;
+      // Fleet management requests for current user, grouped by status
+      const next = { pending: 0, approved: 0, completed: 0, rejected: 0, total: 0 };
       try {
         const me = getCurrentUserId();
         if (me) {
-          // Get tickets with IN_PROGRESS or PENDING status (these are "open" tickets)
-          // The backend TicketsController is mounted at /tickets, so call that path.
-          // Use pageSize=1 to minimize data transfer, we only need the total count.
-          const [inProgressRes, pendingRes] = await Promise.all([
-            apiGet<any>(`/tickets?status=IN_PROGRESS&page=1&pageSize=1`).catch((err) => {
-              console.warn('Failed to fetch IN_PROGRESS tickets:', err);
-              return { tickets: [], pagination: { total: 0 } };
-            }),
-            apiGet<any>(`/tickets?status=PENDING&page=1&pageSize=1`).catch((err) => {
-              console.warn('Failed to fetch PENDING tickets:', err);
-              return { tickets: [], pagination: { total: 0 } };
-            })
-          ]);
-          
-          // Backend returns { tickets: [], pagination: { total: number } }
-          // For END_USER role, backend already filters by createdById, so we can use pagination.total
-          const inProgressCount = inProgressRes?.pagination?.total ?? 0;
-          const pendingCount = pendingRes?.pagination?.total ?? 0;
-          
-          myOpenTickets = inProgressCount + pendingCount;
-        }
-      } catch (e) {
-        console.error('Error loading open tickets:', e);
-        myOpenTickets = 0;
-      }
-
-      // 2) Fleet management requests (pending for current user)
-      let fleetRequests = 0;
-      try {
-        const me = getCurrentUserId();
-        if (me) {
-          const fleet = await listFleetRequests({ status: "PENDING" });
+          const fleet = await listFleetRequests();
           const fleetArray = Array.isArray(fleet) ? fleet : [];
-          // Filter to only current user's requests
-          fleetRequests = fleetArray.filter((req: any) => req.requestorId === me).length;
+          const mine = fleetArray.filter((req: any) => req.requestorId === me);
+          next.total = mine.length;
+          mine.forEach((req: any) => {
+            const s = String(req?.status || req?.requestStatus || req?.currentStatus || "").toUpperCase();
+            if (s === "PENDING" || s === "SUBMITTED" || s === "DRAFT") next.pending++;
+            else if (s === "APPROVED") next.approved++;
+            else if (s === "COMPLETED" || s === "DONE" || s === "CLOSED") next.completed++;
+            else if (s === "REJECTED" || s === "CANCELLED" || s === "DENIED") next.rejected++;
+          });
         }
       } catch {
-        fleetRequests = 0;
+        // keep zeros
       }
 
-      // 3) Articles created by current user
-      let myArticles = 0;
-      try {
-        const me = getCurrentUserId();
-        if (me) {
-          const page = await articlesApi.list({ page: 1, limit: 1, authorId: me });
-          myArticles =
-            (page as any)?.pagination?.total ??
-            (Array.isArray((page as any)?.articles) ? (page as any).articles.length : 0);
-        }
-      } catch {
-        myArticles = 0;
-      }
-
-      // 4) Recent announcements (public list, newest first)
-      const ads = await listAdvertisements({ sort: "newest", page: 1, pageSize: 5 });
-      const adsItems: any[] = Array.isArray((ads as any)?.items) ? (ads as any).items : [];
-      const announcementsCount =
-        (ads as any)?.total ?? (Array.isArray((ads as any)?.items) ? (ads as any).items.length : 0);
-
-      const newCounts = { myOpenTickets, announcements: announcementsCount, fleetRequests, myArticles };
-      console.log('Dashboard counts updated:', newCounts);
-      setCounts(newCounts);
-      setRecentAnnouncements(
-        adsItems.map((a) => ({ id: String(a.id), title: String(a.title || ""), createdAt: a.createdAt }))
-      );
+      setCounts(next);
     } catch (e: any) {
       setError(e?.message || "Failed to load dashboard report");
     } finally {
@@ -148,18 +94,30 @@ export default function EndUserDashboardPage() {
             <div className="p-3 rounded border border-red-200 bg-red-50 text-red-700">{error}</div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-            <SectionCard 
-              title=""
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard
+              title="የጥያቄ ሁኔታ በስታቲስቲክስ — Request Status"
               onRefresh={loadCounts}
               loading={loading}
             >
               <VerticalBars
                 items={[
-                  { label: "My Open Tickets", value: counts.myOpenTickets, color: "#3B82F6" },
-                  { label: "Fleet (Pending)", value: counts.fleetRequests, color: "#6366F1" },
-                  { label: "total article", value: counts.myArticles, color: "#EC4899" },
+                  { label: "Pending", value: counts.pending, color: "#F59E0B" },
+                  { label: "Approved", value: counts.approved, color: "#10B981" },
+                  { label: "Completed", value: counts.completed, color: "#6366F1" },
+                  { label: "Rejected", value: counts.rejected, color: "#EF4444" },
                 ]}
+              />
+            </SectionCard>
+            <SectionCard title="የጥያቄ ክፍፍል — Share">
+              <DonutChart
+                items={[
+                  { label: "Pending", value: counts.pending, color: "#F59E0B" },
+                  { label: "Approved", value: counts.approved, color: "#10B981" },
+                  { label: "Completed", value: counts.completed, color: "#6366F1" },
+                  { label: "Rejected", value: counts.rejected, color: "#EF4444" },
+                ]}
+                total={counts.total}
               />
             </SectionCard>
           </div>
@@ -292,6 +250,68 @@ function VerticalBars({ items }: { items: Array<{ label: string; value: number; 
           strokeWidth={1}
         />
       </svg>
+    </div>
+  );
+}
+
+function DonutChart({
+  items,
+  total,
+}: {
+  items: Array<{ label: string; value: number; color: string }>;
+  total: number;
+}) {
+  const size = 220;
+  const stroke = 28;
+  const r = (size - stroke) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+
+  let acc = 0;
+  const slices = items
+    .filter((i) => i.value > 0)
+    .map((i) => {
+      const frac = total > 0 ? i.value / total : 0;
+      const dash = frac * circumference;
+      const offset = -acc * circumference;
+      acc += frac;
+      return { ...i, dash, offset, pct: Math.round(frac * 100) };
+    });
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[240px]">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E5E7EB" strokeWidth={stroke} />
+        {slices.map((s) => (
+          <circle
+            key={s.label}
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={stroke}
+            strokeDasharray={`${s.dash} ${circumference - s.dash}`}
+            strokeDashoffset={s.offset}
+            transform={`rotate(-90 ${cx} ${cy})`}
+          />
+        ))}
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize={26} fontWeight={700} fill="#111827">
+          {total}
+        </text>
+        <text x={cx} y={cy + 16} textAnchor="middle" fontSize={11} fill="#6B7280">
+          Total
+        </text>
+      </svg>
+      <div className="flex flex-wrap justify-center gap-3 text-xs">
+        {items.map((i) => (
+          <span key={i.label} className="inline-flex items-center gap-1.5 text-gray-600">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ background: i.color }} />
+            {i.label}: {i.value}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

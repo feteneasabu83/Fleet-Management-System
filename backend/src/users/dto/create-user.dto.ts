@@ -116,10 +116,6 @@ export class CreateUserDto {
       { 
         moduleName: "fleet", 
         permissions: ["view", "create", "edit", "delete", "assign"]
-      },
-      { 
-        moduleName: "tickets", 
-        permissions: ["view", "create", "edit"]
       }
     ],
     description: 'Array of module permissions for the user'

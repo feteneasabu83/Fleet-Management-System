@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import {
+  Car,
+  Users,
+  ClipboardList,
+  FileText,
+  CheckCircle2,
+  Truck,
+  Wrench,
+  Fuel,
+} from 'lucide-react'
 import { useToast } from '@/app/components/toast-provider'
 import { Vehicle, Driver, Assignment, FleetRequestDTO, AssignmentRequest } from '@/app/components/fleet-manager/types'
-import OverviewTab from '@/app/components/fleet-manager/OverviewTab'
 import VehiclesTab from '@/app/components/fleet-manager/VehiclesTab'
 import DriversTab from '@/app/components/fleet-manager/DriversTab'
 import AssignmentsTab from '@/app/components/fleet-manager/AssignmentsTab'
 import RequestsTab from '@/app/components/fleet-manager/RequestsTab'
-import MaintainedTab from '@/app/components/fleet-manager/MaintainedTab'
 import ServicedTab from '@/app/components/fleet-manager/ServicedTab'
 
 export default function FleetManagerClient() {
@@ -21,11 +28,13 @@ export default function FleetManagerClient() {
   const [requests, setRequests] = useState<FleetRequestDTO[]>([])
   const [assignmentRequests, setAssignmentRequests] = useState<AssignmentRequest[]>([])
   const [serviceRegistrations, setServiceRegistrations] = useState<any[]>([])
+  const [fleetCosts, setFleetCosts] = useState<any[]>([])
+  const [fuelRequests, setFuelRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'vehicles' | 'drivers' | 'assignments' | 'requests' | 'maintained' | 'serviced'
+    'overview' | 'vehicles' | 'drivers' | 'assignments' | 'requests' | 'serviced'
   >('overview')
   const { show: toast } = useToast()
 
@@ -41,7 +50,6 @@ export default function FleetManagerClient() {
         'drivers',
         'assignments',
         'requests',
-        'maintained',
         'serviced',
       ] as const
       if (allowed.includes(tabParam as any)) {
@@ -49,6 +57,54 @@ export default function FleetManagerClient() {
       }
     } catch {}
   }, [])
+
+  const loadFleetCosts = async () => {
+    try {
+      const token =
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('token') ||
+        ''
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+      const res = await fetch(`${apiBase}/api/fleet/costs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        setFleetCosts([])
+        return
+      }
+      const data = await res.json().catch(() => ({}))
+      const arr = data?.data || data?.items || data
+      setFleetCosts(Array.isArray(arr) ? arr : [])
+    } catch (err) {
+      console.error('Error fetching fleet costs:', err)
+      setFleetCosts([])
+    }
+  }
+
+  const loadFuelRequests = async () => {
+    try {
+      const token =
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('token') ||
+        ''
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+      const res = await fetch(`${apiBase}/api/fleet/manager/fuel-requests`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        setFuelRequests([])
+        return
+      }
+      const data = await res.json().catch(() => ({}))
+      const arr = data?.data || data?.items || data
+      setFuelRequests(Array.isArray(arr) ? arr : [])
+    } catch (err) {
+      console.error('Error fetching fuel requests:', err)
+      setFuelRequests([])
+    }
+  }
 
   const loadServiceRegistrations = async () => {
     try {
@@ -275,6 +331,8 @@ export default function FleetManagerClient() {
         loadRequests(),
         loadAssignmentDetails(),
         loadServiceRegistrations(),
+        loadFleetCosts(),
+        loadFuelRequests(),
       ])
     }
     loadData()
@@ -307,262 +365,234 @@ export default function FleetManagerClient() {
     )
   }
 
+  const costAmount = (c: any) => {
+    const n = Number(c?.amount ?? c?.cost ?? c?.total ?? 0)
+    return Number.isFinite(n) ? n : 0
+  }
+  const costCategory = (c: any) => String(c?.category ?? c?.type ?? c?.name ?? '').toLowerCase()
+
+  const maintenanceCosts = fleetCosts.filter((c) =>
+    /maint|service|repair|ጥገና/.test(costCategory(c))
+  )
+  const maintenanceCost = maintenanceCosts.reduce((sum, c) => sum + costAmount(c), 0)
+  const maintenanceCostCount = maintenanceCosts.length
+
+  const fuelCost = fleetCosts
+    .filter((c) => /fuel|gas|petrol|diesel|ነዳጅ/.test(costCategory(c)))
+    .reduce((sum, c) => sum + costAmount(c), 0)
+
+  const formatCost = (n: number) => n.toLocaleString('en-US')
+
+  const totalFuelLiters = fuelRequests.reduce((sum, r: any) => {
+    const n = Number(r?.amount ?? 0)
+    return sum + (Number.isFinite(n) ? n : 0)
+  }, 0)
+  const fueledCount = fuelRequests.filter((r: any) => {
+    const s = String(r?.status || '').toUpperCase()
+    return s === 'FUELED' || s === 'COMPLETED' || s === 'APPROVED'
+  }).length
+
+  const statCards = [
+    {
+      label: 'ጠቅላላ የተመዘገበ መኪና',
+      value: stats.totalVehicles,
+      icon: Car,
+      chip: 'bg-blue-50 text-blue-600',
+      tab: 'vehicles' as const,
+      tabParam: 'vehicles',
+    },
+    {
+      label: 'የመኪና ጥያቄዎች',
+      value: requests.length,
+      icon: FileText,
+      chip: 'bg-emerald-50 text-emerald-600',
+      tab: 'requests' as const,
+      tabParam: 'requests',
+    },
+    {
+      label: 'መስክ ላይ ያልሆኑ ሹፌሮች',
+      value: stats.activeDrivers,
+      icon: Users,
+      chip: 'bg-sky-50 text-sky-600',
+      tab: 'drivers' as const,
+      tabParam: 'drivers&status=unassigned',
+    },
+    {
+      label: 'የተመደበ መኪና',
+      value: assignedVehiclesCount,
+      icon: ClipboardList,
+      chip: 'bg-orange-50 text-orange-600',
+      tab: 'assignments' as const,
+      tabParam: 'assignments',
+    },
+    {
+      label: 'ሰርቪስ የተደረገላቸው መኪኖች',
+      value: servicedVehiclesCount,
+      icon: CheckCircle2,
+      chip: 'bg-indigo-50 text-indigo-600',
+      tab: 'serviced' as const,
+      tabParam: 'serviced',
+    },
+    {
+      label: 'መስክ ላይ ያልሆኑ መኪኖች',
+      value: stats.availableVehicles,
+      icon: Truck,
+      chip: 'bg-teal-50 text-teal-600',
+      tab: 'vehicles' as const,
+      tabParam: 'vehicles&status=available',
+    },
+  ]
+
+  const goToTab = (tab: string, tabParam?: string) => {
+    setActiveTab(tab as any)
+    router.push(`/fleet/manager?tab=${tabParam || tab}`)
+  }
+
+  const handleCardClick = (card: (typeof statCards)[number]) => {
+    if ('tab' in card && card.tab) {
+      goToTab(card.tab, 'tabParam' in card ? card.tabParam : undefined)
+    }
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/fleet/vehicleAdd"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                መኪና ይመዝግቡ
-              </Link>
+    <div className="min-h-screen bg-slate-50">
+      <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+        {activeTab === 'overview' ? (
+          /* ── Dashboard: stat buttons + fuel container ──────── */
+          <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {statCards.map((card) => (
               <button
+                key={card.label}
                 type="button"
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
-                onClick={() => setActiveTab('requests')}
+                onClick={() => handleCardClick(card)}
+                className="group rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
               >
-                ሹፌር ይመድቡ
+                <div className={`mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg ${card.chip}`}>
+                  <card.icon className="h-5 w-5" />
+                </div>
+                <p className="text-2xl font-bold text-slate-900">{card.value}</p>
+                <p className="mt-0.5 text-xs font-medium text-slate-500">{card.label}</p>
               </button>
+            ))}
+          </div>
+
+          {/* ── Fuel Container ─────────────────────────────── */}
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                  <Fuel className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">የነዳጅ ማጠቃለያ</h3>
+                  <p className="text-xs text-slate-500">Fuel summary</p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => router.push('/finance/fleet-costs')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
+                onClick={() => router.push('/fleet/manager/costs?kind=fuel')}
+                className="rounded-lg bg-[#135a98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f4e84]"
               >
-                ጠቅላላ የመኪና ወጪ መመዝገቢያ
-              </button>
-              <Link
-                href="/fleet/manager/fuel-requests"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                የመጡ የነዳጅ ጥያቄዎች
-              </Link>
-              <Link
-                href="/fleet/manager/maintenance"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Maintenance request
-              </Link>
-              <button
-                type="button"
-                onClick={() => router.push('/fleet/manager/reports')}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                ጠቅላላ ሪፖርት
+                ዝርዝር ይመልከቱ
               </button>
             </div>
+            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-4">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ የነዳጅ ጥያቄዎች</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">{fuelRequests.length}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ ነዳጅ (ሊትር)</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">{totalFuelLiters.toLocaleString('en-US')}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ነዳጅ የተሞላላቸው</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-600">{fueledCount}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ የነዳጅ ወጪ</p>
+                <p className="mt-1 text-2xl font-bold text-rose-600">{formatCost(fuelCost)}</p>
+              </div>
+            </div>
           </div>
-          <div className="flex-none ml-4">
-            <Link
-              href="/fleet"
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+
+          {/* ── Maintenance Cost Status Container ──────────── */}
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                  <Wrench className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">የጥገና ወጪ ሁኔታ</h3>
+                  <p className="text-xs text-slate-500">Maintenance cost status</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push('/fleet/manager/costs?kind=maintenance')}
+                className="rounded-lg bg-[#135a98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f4e84]"
+              >
+                ዝርዝር ይመልከቱ
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">የጥገና ወጪ መዝገቦች</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">{maintenanceCostCount}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ የጥገና ወጪ</p>
+                <p className="mt-1 text-2xl font-bold text-amber-600">{formatCost(maintenanceCost)}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ሰርቪስ የተደረገላቸው መኪኖች</p>
+                <p className="mt-1 text-2xl font-bold text-indigo-600">{servicedVehiclesCount}</p>
+              </div>
+            </div>
+          </div>
+          </>
+        ) : (
+          /* ── Tab Content (deep links via ?tab=...) ────────── */
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('overview')
+                router.push('/fleet/manager')
+              }}
+              className="mb-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
             >
-              ← ወደኋላ ይመለሱ
-            </Link>
+              ← ወደ ዳሽቦርድ ተመለስ
+            </button>
+            {activeTab === 'vehicles' && (
+            <VehiclesTab
+              vehicles={vehicles}
+              drivers={drivers}
+              assignments={assignmentRequests}
+              serviceRegistrations={serviceRegistrations}
+              onVehiclesUpdate={setVehicles}
+            />
+          )}
+
+          {activeTab === 'drivers' && <DriversTab drivers={drivers} onDriversUpdate={setDrivers} />}
+
+          {activeTab === 'requests' && (
+            <RequestsTab requests={requests} onRequestsUpdate={setRequests} />
+          )}
+
+          {activeTab === 'assignments' && (
+            <AssignmentsTab
+              requests={assignmentRequests}
+              onAssignmentsUpdate={setAssignmentRequests}
+            />
+          )}
+
+          {activeTab === 'serviced' && <ServicedTab />}
           </div>
-        </div>
+        )}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => {
-            setActiveTab('vehicles')
-            router.push('/fleet/manager?tab=vehicles')
-          }}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1a1 1 0 001-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">ጠቅላላ የተመዘገበ መኪና</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.totalVehicles}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => {
-            setActiveTab('requests')
-            router.push('/fleet/manager?tab=requests')
-          }}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">የመኪና ጥያቄዎቸ</p>
-              <p className="text-2xl font-semibold text-gray-900">{requests.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => {
-            setActiveTab('drivers')
-            router.push('/fleet/manager?tab=drivers&status=unassigned')
-          }}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-9-5.197"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">መስክ ላይ ያልሆኑ ሹፌሮች</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.activeDrivers}</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Additional Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => {
-            setActiveTab('assignments')
-            router.push('/fleet/manager?tab=assignments')
-          }}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1a1 1 0 001-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">የተመደበ መኪና</p>
-              <p className="text-2xl font-semibold text-gray-900">{assignedVehiclesCount}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => router.push('/fleet/service-time')}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">ሰርቪስ ላይ ያሉ መኪኖች</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.maintenanceVehicles}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="bg-[#B0E0E6] p-6 rounded-lg shadow border cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => {
-            setActiveTab('serviced')
-            router.push('/fleet/manager?tab=serviced')
-          }}
-        >
-          <div className="flex items-center">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">ሰርቪስ የተደረገላቸዉ መኪኖች</p>
-              <p className="text-2xl font-semibold text-gray-900">{servicedVehiclesCount}</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {activeTab === 'overview' && (
-        <OverviewTab vehicles={vehicles} drivers={drivers} assignments={assignments} stats={stats} />
-      )}
-
-      {activeTab === 'vehicles' && (
-        <VehiclesTab
-          vehicles={vehicles}
-          drivers={drivers}
-          assignments={assignmentRequests}
-          serviceRegistrations={serviceRegistrations}
-          onVehiclesUpdate={setVehicles}
-        />
-      )}
-
-      {activeTab === 'drivers' && <DriversTab drivers={drivers} onDriversUpdate={setDrivers} />}
-
-      {activeTab === 'requests' && (
-        <RequestsTab requests={requests} onRequestsUpdate={setRequests} />
-      )}
-
-      {activeTab === 'assignments' && (
-        <AssignmentsTab
-          requests={assignmentRequests}
-          onAssignmentsUpdate={setAssignmentRequests}
-        />
-      )}
-
-      {activeTab === 'maintained' && (
-        <MaintainedTab vehicles={vehicles} onVehiclesUpdate={setVehicles} />
-      )}
-
-      {activeTab === 'serviced' && <ServicedTab />}
     </div>
   )
 }

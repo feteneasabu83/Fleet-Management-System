@@ -52,9 +52,23 @@ type NewRequestForm = {
   organization: string
   incidentSeverity: 'HIGH' | 'LOW'
   receiptPeriod: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly'
+  issueType: string
   notes: string
   receipts: ReceiptItem[]
 }
+
+const MAINTENANCE_ISSUE_TYPES = [
+  'የሞተር / ኢንጅን ችግር',
+  'የፍሬን ስርዓት',
+  'የአየር ኮንዲሽነር',
+  'የኤሌክትሪክ ስርዓት',
+  'የስታርተር',
+  'የጎማ / የአገልግሎት',
+  'የማገዶ ስርዓት',
+  'የባዶ ሰው / ገጽታ',
+  'የማዞሪያ ስርዓት',
+  'ሌሎች',
+] as const
 
 interface MaintenanceRequest {
   id: string
@@ -156,6 +170,7 @@ export default function MaintenancePage() {
     organization: '',
     incidentSeverity: 'LOW',
     receiptPeriod: 'Monthly',
+    issueType: '',
     notes: '',
     receipts: [],
   })
@@ -760,6 +775,7 @@ export default function MaintenancePage() {
       organization: '',
       incidentSeverity: 'LOW',
       receiptPeriod: 'Monthly',
+      issueType: '',
       notes: '',
       receipts: [],
     })
@@ -849,7 +865,10 @@ export default function MaintenancePage() {
           organization: newRequest.organization,
           incidentSeverity: newRequest.incidentSeverity,
           receiptPeriod: newRequest.receiptPeriod,
-          notes: newRequest.notes,
+          issueType: newRequest.issueType || undefined,
+          notes: newRequest.issueType
+            ? `[${newRequest.issueType}] ${newRequest.notes}`.trim()
+            : newRequest.notes,
           receipts: newRequest.receipts,
         }),
       })
@@ -2029,6 +2048,19 @@ export default function MaintenancePage() {
                   >
                     <option value="LOW">LOW</option>
                     <option value="HIGH">HIGH</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">የችግር / የኢንሲደንት አይነት</label>
+                  <select
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value={newRequest.issueType}
+                    onChange={(e) => setNewRequest(v => ({ ...v, issueType: e.target.value }))}
+                  >
+                    <option value="">ይምረጡ</option>
+                    {MAINTENANCE_ISSUE_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

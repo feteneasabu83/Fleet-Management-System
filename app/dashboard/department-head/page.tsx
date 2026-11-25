@@ -5,7 +5,6 @@ import { DashboardLayout } from "@/app/components/dashboard-layout";
 import { AuthGuard } from "@/app/components/auth-guard";
 import { ClipboardList } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { listFleetRequests } from "@/app/lib/fleet-api";
 import { getCurrentUserPrimaryRole, getCurrentUserId } from "@/app/lib/auth";
 import { getDepartmentInfo } from "@/app/lib/session";
 
@@ -13,9 +12,7 @@ export default function DepartmentHeadDashboardPage() {
   const router = useRouter();
 
   const [fleetPendingCount, setFleetPendingCount] = useState<number | null>(null);
-  const [fleetIncomingCount, setFleetIncomingCount] = useState<number | null>(null);
-  const [ticketsIncomingCount, setTicketsIncomingCount] = useState<number | null>(null);
-  const [ideasBoxCount, setIdeasBoxCount] = useState<number | null>(null);
+  const [statusCounts, setStatusCounts] = useState({ pending: 0, approved: 0, completed: 0, rejected: 0, total: 0 });
   const deptInfo = getDepartmentInfo();
 
   // Simple helper reused from other pages
@@ -33,14 +30,6 @@ export default function DepartmentHeadDashboardPage() {
   }
 
   const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/$/, "");
-
-  async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit) {
-    const token = getToken();
-    const headers = new Headers(init?.headers || {});
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-    return fetch(input, { ...init, headers });
-  }
 
   useEffect(() => {
     async function loadCounts() {
@@ -65,98 +54,28 @@ export default function DepartmentHeadDashboardPage() {
         const currentUserId = getCurrentUserId();
         const teamRequests = items.filter((req: any) => {
           const requesterId = req?.requestor?.id;
+          return requesterId && requesterId !== currentUserId;
+        });
+
+        const pending = teamRequests.filter((req: any) => {
           const status = (req as any).status || (req as any).requestStatus || (req as any).currentStatus;
-          const isPending = typeof status === "string" && status.toLowerCase() === "pending";
-          return requesterId && requesterId !== currentUserId && isPending;
+          return typeof status === "string" && status.toLowerCase() === "pending";
         });
 
-        // For now, incoming count is the same as pending team requests for this card
-        setFleetIncomingCount(teamRequests.length);
-        setFleetPendingCount(teamRequests.length);
-
-        // --- Tickets created by other users/departments ---
-        const ticketsRes = await fetch(`${API_BASE}/api/tickets`, {
-          credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        const next = { pending: 0, approved: 0, completed: 0, rejected: 0, total: teamRequests.length };
+        teamRequests.forEach((req: any) => {
+          const s = String((req as any).status || (req as any).requestStatus || (req as any).currentStatus || "").toUpperCase();
+          if (s === "PENDING" || s === "SUBMITTED" || s === "DRAFT") next.pending++;
+          else if (s === "APPROVED") next.approved++;
+          else if (s === "COMPLETED" || s === "DONE" || s === "CLOSED") next.completed++;
+          else if (s === "REJECTED" || s === "CANCELLED" || s === "DENIED") next.rejected++;
         });
 
-        if (ticketsRes.ok) {
-          const ticketsJson = await ticketsRes.json().catch(() => ({}));
-          const ticketItems: any[] = Array.isArray(ticketsJson?.tickets)
-            ? ticketsJson.tickets
-            : Array.isArray(ticketsJson)
-            ? ticketsJson
-            : [];
-
-          const pendingTickets = ticketItems.filter((t: any) => {
-            const rawStatus = (t as any).status;
-            const status = typeof rawStatus === "string" ? rawStatus.toLowerCase() : "";
-            return status === "pending";
-          });
-
-          setTicketsIncomingCount(pendingTickets.length);
-        } else {
-          setTicketsIncomingCount(0);
-        }
-
-        // --- Feedback submissions for my department (ideas & complaints box) ---
-        try {
-          const ideasTypes = new Set(["COMPLAINT", "SUGGESTION", "COMPLIMENT", "FEEDBACK"]);
-
-          // 1) Submissions sent directly to me
-          const receivedRes = await fetch(`${API_BASE}/api/submissions/mine/received`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-
-          let countReceived = 0;
-          if (receivedRes.ok) {
-            const subsJson = await receivedRes.json().catch(() => ({}));
-            const subsItems: any[] = Array.isArray(subsJson?.items)
-              ? subsJson.items
-              : Array.isArray(subsJson)
-              ? subsJson
-              : [];
-
-            const relevantReceived = subsItems.filter((s: any) => {
-              const rawType = (s as any).type;
-              const type = typeof rawType === "string" ? rawType.toUpperCase() : "";
-              return ideasTypes.has(type);
-            });
-
-            countReceived = relevantReceived.length;
-          }
-
-          // 2) Submissions for my department with no explicit recipient
-          const deptRes = await fetch(`${API_BASE}/api/submissions/mine/department-unassigned`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-
-          let countDept = 0;
-          if (deptRes.ok) {
-            const deptJson = await deptRes.json().catch(() => ({}));
-            const deptItems: any[] = Array.isArray(deptJson?.items)
-              ? deptJson.items
-              : Array.isArray(deptJson)
-              ? deptJson
-              : [];
-
-            const relevantDept = deptItems.filter((s: any) => {
-              const rawType = (s as any).type;
-              const type = typeof rawType === "string" ? rawType.toUpperCase() : "";
-              return ideasTypes.has(type);
-            });
-
-            countDept = relevantDept.length;
-          }
-
-          setIdeasBoxCount(countReceived + countDept);
-        } catch {
-          setIdeasBoxCount(0);
-        }
+        setFleetPendingCount(pending.length);
+        setStatusCounts(next);
       } catch {
         setFleetPendingCount(0);
-        setTicketsIncomingCount(0);
-        setIdeasBoxCount(0);
+        setStatusCounts({ pending: 0, approved: 0, completed: 0, rejected: 0, total: 0 });
       }
     }
 
@@ -168,7 +87,7 @@ export default function DepartmentHeadDashboardPage() {
   useEffect(() => {
     const role = getCurrentUserPrimaryRole();
     if (role !== "department_head" && role !== "women_social_inclusion") {
-      router.replace("/dashboard");
+      router.replace("/fleet/request");
     }
   }, [router]);
 
@@ -215,32 +134,86 @@ export default function DepartmentHeadDashboardPage() {
                 <ClipboardList className="w-7 h-7" />
               </div>
             </button>
+          </div>
 
-            {/* Tickets from other users/departments */}
-            <button
-              type="button"
-              onClick={() => router.push("/tickets?tab=other")}
-              className="bg-white rounded-2xl shadow-md border flex items-center justify-between px-10 py-8 relative overflow-hidden text-left hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
-            >
-              {/* Left accent border */}
-              <div className="absolute inset-y-0 left-0 w-1 bg-sky-500" />
-
-              <div className="relative flex flex-col">
-                <span className="text-base font-semibold text-amber-500 mb-2">
-                  Tickets
-                </span>
-                <span className="text-5xl font-extrabold text-gray-800 leading-tight">
-                  {formatCount(ticketsIncomingCount)}
-                </span>
-              </div>
-
-              <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-sky-50 text-sky-500">
-                <ClipboardList className="w-7 h-7" />
-              </div>
-            </button>
+          {/* Report charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-700">የቡድን ጥያቄዎች ሁኔታ — Team Request Status</h3>
+              <StatusBarChart counts={statusCounts} />
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="mb-3 text-sm font-semibold text-slate-700">የቡድን ጥያቄ ክፍፍል — Team Share</h3>
+              <StatusDonut counts={statusCounts} />
+            </div>
           </div>
         </div>
       </DashboardLayout>
     </AuthGuard>
+  );
+}
+
+const STATUS_ITEMS = [
+  { key: "pending", label: "Pending", color: "#F59E0B" },
+  { key: "approved", label: "Approved", color: "#10B981" },
+  { key: "completed", label: "Completed", color: "#6366F1" },
+  { key: "rejected", label: "Rejected", color: "#EF4444" },
+] as const;
+
+function StatusBarChart({ counts }: { counts: { pending: number; approved: number; completed: number; rejected: number; total: number } }) {
+  const max = Math.max(1, ...STATUS_ITEMS.map((s) => counts[s.key]));
+  return (
+    <div className="flex h-56 items-end justify-around gap-3">
+      {STATUS_ITEMS.map((s) => {
+        const v = counts[s.key];
+        const h = Math.max(4, (v / max) * 160);
+        return (
+          <div key={s.key} className="flex flex-1 flex-col items-center gap-1">
+            <span className="text-xs font-bold text-slate-700">{v}</span>
+            <div className="w-full rounded-t-md" style={{ height: h, background: s.color }} />
+            <span className="text-[11px] text-slate-500">{s.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatusDonut({ counts }: { counts: { pending: number; approved: number; completed: number; rejected: number; total: number } }) {
+  const size = 180;
+  const stroke = 24;
+  const r = (size - stroke) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  let acc = 0;
+  const slices = STATUS_ITEMS.filter((s) => counts[s.key] > 0).map((s) => {
+    const frac = counts.total > 0 ? counts[s.key] / counts.total : 0;
+    const dash = frac * circumference;
+    const offset = -acc * circumference;
+    acc += frac;
+    return { ...s, dash, offset };
+  });
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[200px]">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#E5E7EB" strokeWidth={stroke} />
+        {slices.map((s) => (
+          <circle key={s.key} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth={stroke}
+            strokeDasharray={`${s.dash} ${circumference - s.dash}`} strokeDashoffset={s.offset}
+            transform={`rotate(-90 ${cx} ${cy})`} />
+        ))}
+        <text x={cx} y={cy - 4} textAnchor="middle" fontSize={22} fontWeight={700} fill="#111827">{counts.total}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fontSize={10} fill="#6B7280">Total</text>
+      </svg>
+      <div className="flex flex-wrap justify-center gap-3 text-xs">
+        {STATUS_ITEMS.map((s) => (
+          <span key={s.key} className="inline-flex items-center gap-1.5 text-gray-600">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ background: s.color }} />
+            {s.label}: {counts[s.key]}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -23,8 +23,9 @@ export default function SidebarContainer() {
       style={{
         width: 280,
         flexShrink: 0,
-        borderRight: "1px solid #e5e7eb",
-        background: "#DFEAE3",
+        borderRight: "1px solid rgba(148, 163, 184, 0.12)",
+        background: "linear-gradient(180deg, #0b1220 0%, #0f172a 55%, #111c33 100%)",
+        boxShadow: "4px 0 24px rgba(2, 6, 23, 0.35)",
       }}
     >
       <VerticalNavigation />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/app/components/toast-provider";
 import { Driver } from './types';
@@ -17,6 +17,33 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
   const [driverDocs, setDriverDocs] = useState<Array<{ id: string; name: string; docType: string; uploadedAt: string; url?: string }>>([]);
   const [uploadingType, setUploadingType] = useState<string>('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'assigned' | 'unassigned'>('all');
+
+  // Initialize filters from URL (?status=unassigned etc.)
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const s = (sp.get('status') || '').toLowerCase();
+      if (s === 'unassigned' || s === 'assigned') setStatusFilter(s);
+      const q = sp.get('q') || sp.get('search') || '';
+      if (q) setSearch(q);
+    } catch {}
+  }, []);
+
+  const isDriverAssigned = (d: Driver) => Boolean(d.assignedVehicle);
+
+  const filteredDrivers = useMemo(() => {
+    return drivers.filter((d) => {
+      if (statusFilter === 'assigned' && !isDriverAssigned(d)) return false;
+      if (statusFilter === 'unassigned' && isDriverAssigned(d)) return false;
+      if (search) {
+        const hay = `${d.firstName} ${d.lastName} ${d.email} ${d.phone} ${d.role}`.toLowerCase();
+        if (!hay.includes(search.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [drivers, statusFilter, search]);
 
   const loadDrivers = async () => {
     try {
@@ -128,9 +155,37 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
         </div>
       </div>
 
+      {/* Filter bar */}
+      <div className="px-6 pt-6 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email, phone..."
+            className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        >
+          <option value="all">All Drivers</option>
+          <option value="assigned">Assigned</option>
+          <option value="unassigned">Unassigned</option>
+        </select>
+        <div className="text-sm text-gray-500 self-center whitespace-nowrap">
+          {filteredDrivers.length} / {drivers.length} drivers
+        </div>
+      </div>
+
       {/* Drivers Grid */}
       <div className="p-6">
-        {drivers.length === 0 ? (
+        {filteredDrivers.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-20 h-20 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center">
               <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,11 +193,15 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No Drivers Found</h3>
-            <p className="text-gray-400">Get started by adding drivers to your fleet.</p>
+            <p className="text-gray-400">
+              {drivers.length === 0
+                ? 'Get started by adding drivers to your fleet.'
+                : 'No drivers match the current filters.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {drivers.map(driver => (
+            {filteredDrivers.map(driver => (
               <div
                 key={driver.id}
                 role="button"

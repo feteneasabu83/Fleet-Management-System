@@ -21,7 +21,8 @@ const playfairDisplay = Playfair_Display({
 const HEADER_HEIGHT = 84
 
 export const metadata: Metadata = {
-  title: "ICSDS",
+  title: "Fleet Management System",
+  description: "ICSDS Fleet Management System",
   icons: {
     icon: "/gallery/FCSC.jpg",
   },
@@ -49,9 +50,7 @@ export default function RootLayout({
               className="flex flex-1 min-h-[calc(100vh-84px)] flex-row"
             >
               <SidebarContainer />
-              <main
-                className="flex min-h-[calc(100vh-84px)] flex-1 flex-col items-center justify-start bg-transparent px-0 md:px-0 max-w-[1400px] w-full"
-              >
+              <main className="flex min-h-[calc(100vh-84px)] w-full flex-1 flex-col bg-transparent">
                 {/* Fleet manager chart (client-side) */}
                 <FleetReportWidget />
                 {children}

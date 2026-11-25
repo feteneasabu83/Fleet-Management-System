@@ -1,6 +1,6 @@
 export const DEFAULT_SETTINGS: Record<string, string> = {
   // General
-  system_name: "Help-Desk System",
+  system_name: "Fleet Management System",
   logo_url: "",
   default_language: "EN",
   timezone: "Africa/Addis_Ababa",
@@ -24,9 +24,6 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   smtp_port: "587",
   smtp_user: "",
   smtp_pass: "",
-  sms_notifications_enabled: "false",
-  sms_provider: "",
-  sms_api_key: "",
   push_notifications_enabled: "false",
 
   // Security & Access
@@ -38,13 +35,7 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   data_encryption_enabled: "true",
 
   // Modules / Features
-  features_helpdesk_enabled: "true",
-  features_knowledge_base_enabled: "true",
-  features_chat_enabled: "true",
   api_keys_rotation_days: "90",
-  integrations_slack_webhook: "",
-  integrations_teams_webhook: "",
-  integrations_jira_base_url: "",
 
   // Data & Backup
   backup_schedule: "manual",

@@ -15,7 +15,7 @@ async function bootstrap() {
 
   // Add root route for GET /
   app.getHttpAdapter().getInstance().get('/', (req: Request, res: Response) => {
-    res.json({ message: 'ECSC Helpdesk API is running', status: 'ok' })
+    res.json({ message: 'ECSC Asset Management API is running', status: 'ok' })
   })
 
   // Security & cookies
@@ -56,8 +56,8 @@ async function bootstrap() {
 
   // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle("Ethiopian Civil Service Commission Helpdesk API")
-    .setDescription("API for helpdesk and knowledge base system")
+    .setTitle("Ethiopian Civil Service Commission Asset Management API")
+    .setDescription("API for the asset management system")
     .setVersion("1.0")
     .addBearerAuth()
     .build()
@@ -65,7 +65,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup("api/docs", app, document)
 
-  // Serve static uploads (e.g. /uploads/articles/...) so attachments are directly readable in browser
+  // Serve static uploads (e.g. /uploads/...) so attachments are directly readable in browser
   app.use(
     '/uploads',
     express.static(join(process.cwd(), 'uploads')),

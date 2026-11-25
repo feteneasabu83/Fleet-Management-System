@@ -14,11 +14,42 @@ import {
   Tags,
 } from "lucide-react";
 
+const FUEL_TYPES = [
+  'Gasoline / Petrol',
+  'Diesel',
+  'Hybrid',
+  'Plug-in Hybrid (PHEV)',
+  'Electric (EV)',
+  'LPG',
+  'CNG',
+  'Hydrogen (FCEV)',
+  'Biofuel',
+  'Kerosene',
+  'Other',
+] as const;
+
+const VEHICLE_TYPES = [
+  'Sedan',
+  'SUV',
+  'Pickup Truck',
+  'Truck / Lorry',
+  'Van / Minibus',
+  'Bus',
+  'Motorcycle',
+  'Bicycle',
+  'Tractor',
+  'Ambulance',
+  'Fire Truck',
+  'Police Vehicle',
+  'Other',
+] as const;
+
 export default function VehicleAddSheet() {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [drivers, setDrivers] = useState<Array<{ id: string; firstName?: string; lastName?: string; email?: string }>>([]);
   const [form, setForm] = useState({
     plate: "",
     make: "",
@@ -33,9 +64,31 @@ export default function VehicleAddSheet() {
     engineNumber: "",
     fuelType: "",
     cylinderCount: "",
+    userId: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Load drivers for optional assignment
+  useEffect(() => {
+    const loadDrivers = async () => {
+      try {
+        const token =
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("jwt") ||
+          localStorage.getItem("token") ||
+          "";
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/fleet/driver`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const arr = data.data || data.items || data.drivers || data || [];
+        setDrivers(Array.isArray(arr) ? arr : []);
+      } catch {}
+    };
+    loadDrivers();
+  }, []);
 
   // Initialize edit mode from URL query params and prefill form
   useEffect(() => {
@@ -90,6 +143,7 @@ export default function VehicleAddSheet() {
             fuelType: data.fuelType || "",
             cylinderCount:
               data.cylinderCount != null ? String(data.cylinderCount) : "",
+            userId: data.userId || "",
           });
         } catch (err: any) {
           console.error("Error loading vehicle for edit:", err);
@@ -139,6 +193,7 @@ export default function VehicleAddSheet() {
         cylinderCount: form.cylinderCount
           ? Number(form.cylinderCount)
           : undefined,
+        userId: form.userId || undefined,
       };
 
       const url = isEditMode && vehicleId
@@ -341,14 +396,18 @@ export default function VehicleAddSheet() {
               <label className="text-sm font-medium text-gray-700">
                 Vehicle Type Name
               </label>
-              <input
+              <select
                 id="vehicleTypeName"
                 name="vehicleTypeName"
                 value={form.vehicleTypeName}
                 onChange={handleChange}
-                placeholder="e.g. Sedan"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
-              />
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Select type...</option>
+                {VEHICLE_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -387,14 +446,18 @@ export default function VehicleAddSheet() {
               <label className="text-sm font-medium text-gray-700">
                 Fuel Type
               </label>
-              <input
+              <select
                 id="fuelType"
                 name="fuelType"
                 value={form.fuelType}
                 onChange={handleChange}
-                placeholder="e.g. Diesel"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
-              />
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Select fuel type...</option>
+                {FUEL_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -411,6 +474,28 @@ export default function VehicleAddSheet() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
+          </div>
+
+          {/* Assigned Driver (optional) */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <CarFront className="w-4 h-4 text-blue-600" />
+              Assigned Driver <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              id="userId"
+              name="userId"
+              value={form.userId}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="">No driver assigned</option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {[d.firstName, d.lastName].filter(Boolean).join(' ') || d.email || d.id}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Type */}

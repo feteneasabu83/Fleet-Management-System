@@ -150,15 +150,7 @@ export class UsersService {
       // 2. Create default modules and permissions for admin
       const defaultModules = [
         { 
-          name: 'ticket_management', 
-          permissions: ['view', 'create', 'edit', 'delete', 'assign', 'manage'] 
-        },
-        { 
           name: 'user_management', 
-          permissions: ['view', 'create', 'edit', 'delete', 'manage'] 
-        },
-        { 
-          name: 'knowledge_base', 
           permissions: ['view', 'create', 'edit', 'delete', 'manage'] 
         },
         { 

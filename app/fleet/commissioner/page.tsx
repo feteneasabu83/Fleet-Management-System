@@ -17,10 +17,6 @@ export default function CommissionerFleetPage() {
             <div className="font-semibold">Fleet Manager</div>
             <div className="text-sm text-muted-foreground">Assignments, drivers, vehicles, and reports</div>
           </Link>
-          <Link href="/reporting" className="border rounded p-4 hover:bg-muted">
-            <div className="font-semibold">Reporting</div>
-            <div className="text-sm text-muted-foreground">System-wide reports and analytics</div>
-          </Link>
         </div>
       </div>
     </DashboardLayout>

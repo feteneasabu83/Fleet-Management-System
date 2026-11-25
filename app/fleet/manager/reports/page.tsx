@@ -1,6 +1,20 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  AlignmentType,
+  HeadingLevel,
+  PageOrientation,
+  BorderStyle,
+} from 'docx'
 
 interface VehicleRow {
   id: string
@@ -53,18 +67,18 @@ interface FleetCostRow {
 
 interface ReportRow {
   plate: string
-  col1: string
-  col2: string
-  col3: string
-  col4: string
-  col5: string
-  col6: string
-  col7: string
-  col8: string
-  col9: string
-  col10: string
-  col11: string
-  col12: string
+  fuelLiters: string
+  distanceKm: string
+  avgKmPerLiter: string
+  fuelCost: string
+  brakeOilLiters: string
+  brakeOilCost: string
+  motorOilLiters: string
+  motorOilCost: string
+  maintenanceCost: string
+  costPerKm: string
+  totalCost: string
+  remarks: string
 }
 
 export default function FleetManagerReportsPage() {
@@ -76,6 +90,7 @@ export default function FleetManagerReportsPage() {
   const [vehicles, setVehicles] = useState<VehicleRow[]>([])
   const [tripHistory, setTripHistory] = useState<TripHistoryItem[]>([])
   const [range, setRange] = useState<'daily' | 'weekly' | 'monthly' | 'yearly' | 'all'>('monthly')
+  const [search, setSearch] = useState('')
   const [exportFormat, setExportFormat] = React.useState<'excel' | 'word' | 'pdf'>('excel')
   const tableRef = useRef<HTMLTableElement | null>(null)
 
@@ -97,25 +112,115 @@ export default function FleetManagerReportsPage() {
     if (exportFormat === 'pdf') return exportAsPDF()
   }
 
-  const exportAsExcel = () => {
-    if (!tableRef.current) return
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body>${tableRef.current.outerHTML}</body></html>`
-    downloadBlob(html, 'application/vnd.ms-excel', 'fleet-report.xls')
+  // Build a fully-styled standalone HTML document so PDF/Word/Excel
+  // all render the table with borders, header and totals row.
+  const buildReportDocument = () => {
+    if (!tableRef.current) return ''
+    const tableHtml = tableRef.current.outerHTML
+    const generatedAt = new Date().toLocaleString('en-GB')
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8" />
+      <title>Fleet Report — ${rangeLabel}</title>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; font-size: 11px; margin: 24px; }
+        .rpt-header { border-bottom: 3px solid #135a98; padding-bottom: 10px; margin-bottom: 14px; }
+        .rpt-header h1 { font-size: 18px; color: #135a98; margin: 0 0 4px; }
+        .rpt-header .sub { font-size: 11px; color: #64748b; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #94a3b8; padding: 5px 7px; font-size: 10px; text-align: left; }
+        thead th { background: #e8eef5; font-weight: 700; white-space: nowrap; }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        tfoot td { background: #e2e8f0; font-weight: 700; }
+        .num { text-align: center; }
+        @page { size: A4 landscape; margin: 12mm;
+          @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9px; color: #666; } }
+      </style></head><body>
+      <div class="rpt-header">
+        <h1>የመኪናዎች ጠቅላላ ሪፖርት — Fleet Report</h1>
+        <div class="sub">Period: ${rangeLabel} &nbsp;|&nbsp; Generated: ${generatedAt}</div>
+      </div>
+      ${tableHtml}
+      </body></html>`
   }
 
-  const exportAsWord = () => {
-    if (!tableRef.current) return
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body>${tableRef.current.outerHTML}</body></html>`
-    downloadBlob(html, 'application/msword', 'fleet-report.doc')
+  const exportAsExcel = () => {
+    const html = buildReportDocument()
+    if (!html) return
+    downloadBlob(html, 'application/vnd.ms-excel', `fleet-report-${range}.xls`)
+  }
+
+  const exportAsWord = async () => {
+    const border = { style: BorderStyle.SINGLE, size: 4, color: '94A3B8' }
+    const cellBorders = { top: border, bottom: border, left: border, right: border }
+    const headerCell = (text: string) =>
+      new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: 16 })] })],
+        shading: { fill: 'E8EEF5' },
+        borders: cellBorders,
+      })
+    const dataCell = (text: string | number) =>
+      new TableCell({
+        children: [new Paragraph({ children: [new TextRun({ text: String(text ?? ''), size: 16 })] })],
+        borders: cellBorders,
+      })
+
+    const headers = [
+      '#', 'የመኪና ፕሌት', 'ነዳጅ (ሊትር)', 'ኪ.ሜ', 'ኪ.ሜ/ሊትር',
+      'የነዳጅ ወጪ', 'ፍሬን ዘይት (ሊትር)', 'ፍሬን ወጪ',
+      'ሞተር ዘይት (ሊትር)', 'ሞተር ወጪ', 'ጥገና ወጪ',
+      'ወጪ/ኪ.ሜ', 'ጠቅላላ ወጪ', 'ምርመራ',
+    ]
+    const bodyRows = filteredRows.map((r, i) => [
+      i + 1, r.plate, r.fuelLiters || '—', r.distanceKm || '—', r.avgKmPerLiter || '—',
+      r.fuelCost || '—', r.brakeOilLiters || '—', r.brakeOilCost || '—',
+      r.motorOilLiters || '—', r.motorOilCost || '—',
+      r.maintenanceCost || '—', r.costPerKm || '—', r.totalCost || '—', r.remarks || '—',
+    ])
+    const totalRow = [
+      '', 'ጠቅላላ', fmtNum(totals.fuelLiters), fmtNum(totals.distanceKm), '',
+      fmtNum(totals.fuelCost), '—', '—', '—', '—',
+      fmtNum(totals.maintenanceCost), '—', fmtNum(totals.totalCost), '',
+    ]
+
+    const doc = new Document({
+      sections: [{
+        properties: { page: { size: { orientation: PageOrientation.LANDSCAPE } } },
+        children: [
+          new Paragraph({ heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER, children: [new TextRun('የመኪናዎች ጠቅላላ ሪፖርት — Fleet Report')] }),
+          new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Period: ${rangeLabel}   |   Generated: ${new Date().toLocaleString('en-GB')}`, italics: true, size: 20, color: '64748B' })] }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({ tableHeader: true, children: headers.map(headerCell) }),
+              ...bodyRows.map((r) => new TableRow({ children: r.map(dataCell) })),
+              new TableRow({ children: totalRow.map((c) => new TableCell({
+                children: [new Paragraph({ children: [new TextRun({ text: String(c ?? ''), bold: true, size: 16 })] })],
+                shading: { fill: 'E2E8F0' },
+                borders: cellBorders,
+              })) }),
+            ],
+          }),
+        ],
+      }],
+    })
+
+    const blob = await Packer.toBlob(doc)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `fleet-report-${range}.docx`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const exportAsPDF = () => {
-    if (!tableRef.current) return
-    const printContents = tableRef.current.outerHTML
-    const win = window.open('', '_blank', 'width=1024,height=768')
+    const html = buildReportDocument()
+    if (!html) return
+    const win = window.open('', '_blank', 'width=1280,height=900')
     if (!win) return
     win.document.open()
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Fleet Report</title></head><body>${printContents}</body></html>`)
+    win.document.write(html)
     win.document.close()
     win.focus()
     win.print()
@@ -439,38 +544,38 @@ export default function FleetManagerReportsPage() {
       result.push({
         plate,
         // በወር ውስጥ የተቀዳ ነዳጅ በሊትር -> sum of amount
-        col1: liters ? String(liters) : '',
-        // በወር ውስጥ የተጓዘዉ ጠቅላላ ኪ.ሜ -> sum of odometer
-        col2: km ? String(km) : '',
-        // በአማካኝ በሊትር የተጓዘዉ ኪ.ሜ -> simple average
-        col3: avgKmPerLiter,
-        // የተቀዳለት ጠቅላላ የነዳጅ ዋጋ በብር -> monthly Fuel & Energy cost from finance
-        col4: fuelCost
+        fuelLiters: liters ? String(liters) : '',
+        // በወር ውስጥ የተጓዘዉ ጠቅላላ ኪ.ሜ -> latest cumulative odometer
+        distanceKm: km ? String(km) : '',
+        // በአማካኝ በሊትር የተጓዘዉ ኪ.ሜ -> configured or computed average
+        avgKmPerLiter,
+        // የተቀዳለት ጠቅላላ የነዳጅ ዋጋ በብር -> monthly Fuel & Energy cost
+        fuelCost: fuelCost
           ? Number(fuelCost).toLocaleString('en-US', {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
             })
           : '',
-        col5: '',
-        col6: '',
-        col7: '',
-        col8: '',
-        // የተሽከርካሪዉ የጥገና ወጪ በብር -> monthly Maintenance & Repairs cost from finance
-        col9: maintenanceCost
+        brakeOilLiters: '',
+        brakeOilCost: '',
+        motorOilLiters: '',
+        motorOilCost: '',
+        // የተሽከርካሪው የጥገና ወጪ በብር -> monthly Maintenance & Repairs cost
+        maintenanceCost: maintenanceCost
           ? Number(maintenanceCost).toLocaleString('en-US', {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
             })
           : '',
-        col10: '',
-        // የወሩ ጠቅላላ ወጪ በብር -> sum of fuel + maintenance costs for the month
-        col11: totalCost
+        costPerKm: '',
+        // የወሩ ጠቅላላ ወጪ በብር -> fuel + maintenance costs
+        totalCost: totalCost
           ? Number(totalCost).toLocaleString('en-US', {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
             })
           : '',
-        col12: '',
+        remarks: '',
       })
     })
 
@@ -479,88 +584,197 @@ export default function FleetManagerReportsPage() {
     return result
   }, [items, costs, vehicles, range, tripHistory])
 
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return rows
+    return rows.filter((r) => r.plate.toLowerCase().includes(q))
+  }, [rows, search])
+
+  const totals = useMemo(() => {
+    let fuelLiters = 0
+    let distanceKm = 0
+    let fuelCost = 0
+    let maintenanceCost = 0
+    let totalCost = 0
+    filteredRows.forEach((r) => {
+      fuelLiters += Number(r.fuelLiters) || 0
+      distanceKm += Number(r.distanceKm) || 0
+      fuelCost += Number(String(r.fuelCost).replace(/,/g, '')) || 0
+      maintenanceCost += Number(String(r.maintenanceCost).replace(/,/g, '')) || 0
+      totalCost += Number(String(r.totalCost).replace(/,/g, '')) || 0
+    })
+    return { fuelLiters, distanceKm, fuelCost, maintenanceCost, totalCost }
+  }, [filteredRows])
+
+  const rangeLabel =
+    range === 'daily' ? 'ዕለታዊ' :
+    range === 'weekly' ? 'ሳምንታዊ' :
+    range === 'monthly' ? 'ወርሃዊ' :
+    range === 'yearly' ? 'ዓመታዊ' : 'ሁሉም ጊዜያት'
+
+  const fmtNum = (n: number) => n.toLocaleString('en-US')
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">ጠቅላላ ሪፖርት</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            የመኪናዎች ጠቅላላ ሪፖርት ሰንጠረዥ (የነዳጅ፣ የመንገድ ርቀት እና የጥገና ወጪ መረጃዎች)
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs md:text-sm">
-            <span className="text-gray-700">Report range:</span>
-            <select
-              value={range}
-              onChange={e => setRange(e.target.value as any)}
-              className="px-2 py-1 border border-gray-300 rounded bg-white text-gray-800"
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-              <option value="all">All</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={exportFormat}
-            onChange={(e) => setExportFormat(e.target.value as 'excel' | 'word' | 'pdf')}
-            className="px-2 py-2 text-xs md:text-sm border border-gray-300 rounded bg-white text-gray-800"
-          >
-            <option value="excel">Export Excel</option>
-            <option value="word">Export Word</option>
-            <option value="pdf">Export PDF</option>
-          </select>
+    <div className="min-h-screen bg-slate-50">
+      <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6">
           <button
             type="button"
-            onClick={handleExport}
-            className="px-3 py-2 text-xs md:text-sm rounded bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => window.history.back()}
+            className="mb-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
           >
-            Export
+            ← ተመለስ
           </button>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">ጠቅላላ ሪፖርት</h1>
+              <p className="mt-1 text-sm text-slate-500">
+                የመኪናዎች ጠቅላላ ሪፖርት — ነዳጅ፣ የመንገድ ርቀት እና ወጪዎች ({rangeLabel})
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={range}
+                onChange={e => setRange(e.target.value as any)}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="daily">ዕለታዊ</option>
+                <option value="weekly">ሳምንታዊ</option>
+                <option value="monthly">ወርሃዊ</option>
+                <option value="yearly">ዓመታዊ</option>
+                <option value="all">ሁሉም</option>
+              </select>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="ፕሌት ቁጥር ፈልግ..."
+                className="w-44 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              />
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value as 'excel' | 'word' | 'pdf')}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="excel">Excel</option>
+                <option value="word">Word</option>
+                <option value="pdf">PDF</option>
+              </select>
+              <button
+                type="button"
+                onClick={handleExport}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              >
+                አውርድ
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="overflow-x-auto border rounded-lg bg-white shadow-sm">
-        <table ref={tableRef} className="min-w-[1200px] table-auto text-xs md:text-sm">
-          <thead>
-            <tr className="bg-gray-100 text-gray-800">
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የመኪና ፕሌት</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">በወር ዉስጥ የተቀዳ ነዳጅ በሊትር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">በወር ውስጥ የተጓዘዉ ጠቅላላ ኪ.ሜ</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">በአማካኝ በሊትር የተጓዘዉ ኪ.ሜ</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የተቀዳለት ጠቅላላ የነዳጅ ዋጋ በብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የፍሬን ዘይት በሊትር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የፍሬን ዘይት ዋጋ በብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የሞተር ዘይት በሊትር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የሞተር ዘይት ዋጋ በብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የተሽከርካሪዉ የጥገና ወጪ በብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">ወጪ በኪ.ሜ ብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">የወሩ ጠቅላላ ወጪ በብር</th>
-              <th className="border px-2 py-2 text-center whitespace-nowrap">ምርመራ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row: ReportRow, idx: number) => (
-              <tr key={row.plate + idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td className="border px-2 py-1 text-center whitespace-nowrap">{row.plate}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col1}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col2}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col3}</td>
-                <td className="border px-2 py-1 text-center min-w-[110px]">{row.col4}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col5}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col6}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col7}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col8}</td>
-                <td className="border px-2 py-1 text-center min-w-[110px]">{row.col9}</td>
-                <td className="border px-2 py-1 text-center min-w-[90px]">{row.col10}</td>
-                <td className="border px-2 py-1 text-center min-w-[110px]">{row.col11}</td>
-                <td className="border px-2 py-1 min-w-[140px]">{row.col12}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Summary cards */}
+        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">መኪናዎች</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{filteredRows.length}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">ጠቅላላ ነዳጅ (ሊትር)</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{fmtNum(totals.fuelLiters)}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">ጠቅላላ ኪ.ሜ</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{fmtNum(totals.distanceKm)}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">የነዳጅ ወጪ</p>
+            <p className="mt-1 text-2xl font-bold text-rose-600">{fmtNum(totals.fuelCost)}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">ጠቅላላ ወጪ</p>
+            <p className="mt-1 text-2xl font-bold text-emerald-600">{fmtNum(totals.totalCost)}</p>
+          </div>
+        </div>
+
+        {/* Report table */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table ref={tableRef} className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-3 py-3">#</th>
+                  <th className="px-3 py-3">የመኪና ፕሌት</th>
+                  <th className="px-3 py-3 text-center">የተቀዳ ነዳጅ (ሊትር)</th>
+                  <th className="px-3 py-3 text-center">የተጓዘ ኪ.ሜ</th>
+                  <th className="px-3 py-3 text-center">ኪ.ሜ / ሊትር</th>
+                  <th className="px-3 py-3 text-center">የነዳጅ ወጪ (ብር)</th>
+                  <th className="px-3 py-3 text-center">የፍሬን ዘይት (ሊትር)</th>
+                  <th className="px-3 py-3 text-center">የፍሬን ዘይት ዋጋ (ብር)</th>
+                  <th className="px-3 py-3 text-center">የሞተር ዘይት (ሊትር)</th>
+                  <th className="px-3 py-3 text-center">የሞተር ዘይት ዋጋ (ብር)</th>
+                  <th className="px-3 py-3 text-center">የጥገና ወጪ (ብር)</th>
+                  <th className="px-3 py-3 text-center">ወጪ በኪ.ሜ (ብር)</th>
+                  <th className="px-3 py-3 text-center">ጠቅላላ ወጪ (ብር)</th>
+                  <th className="px-3 py-3">ምርመራ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loading || loadingCosts ? (
+                  <tr>
+                    <td colSpan={14} className="px-4 py-8 text-center text-slate-500">
+                      በመጫን ላይ...
+                    </td>
+                  </tr>
+                ) : filteredRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={14} className="px-4 py-8 text-center text-slate-500">
+                      ምንም መረጃ የለም
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRows.map((row: ReportRow, idx: number) => (
+                    <tr key={row.plate + idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                      <td className="px-3 py-2.5 text-slate-400">{idx + 1}</td>
+                      <td className="px-3 py-2.5 font-semibold text-slate-900 whitespace-nowrap">{row.plate}</td>
+                      <td className="px-3 py-2.5 text-center">{row.fuelLiters}</td>
+                      <td className="px-3 py-2.5 text-center">{row.distanceKm}</td>
+                      <td className="px-3 py-2.5 text-center">{row.avgKmPerLiter}</td>
+                      <td className="px-3 py-2.5 text-center text-rose-600">{row.fuelCost}</td>
+                      <td className="px-3 py-2.5 text-center">{row.brakeOilLiters || '—'}</td>
+                      <td className="px-3 py-2.5 text-center">{row.brakeOilCost || '—'}</td>
+                      <td className="px-3 py-2.5 text-center">{row.motorOilLiters || '—'}</td>
+                      <td className="px-3 py-2.5 text-center">{row.motorOilCost || '—'}</td>
+                      <td className="px-3 py-2.5 text-center text-amber-600">{row.maintenanceCost}</td>
+                      <td className="px-3 py-2.5 text-center">{row.costPerKm || '—'}</td>
+                      <td className="px-3 py-2.5 text-center font-bold text-slate-900">{row.totalCost}</td>
+                      <td className="px-3 py-2.5">{row.remarks || '—'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              {!loading && !loadingCosts && filteredRows.length > 0 && (
+                <tfoot>
+                  <tr className="border-t-2 border-slate-200 bg-slate-100 font-bold text-slate-900">
+                    <td className="px-3 py-3" colSpan={2}>ጠቅላላ</td>
+                    <td className="px-3 py-3 text-center">{fmtNum(totals.fuelLiters)}</td>
+                    <td className="px-3 py-3 text-center">{fmtNum(totals.distanceKm)}</td>
+                    <td className="px-3 py-3" />
+                    <td className="px-3 py-3 text-center text-rose-600">{fmtNum(totals.fuelCost)}</td>
+                    <td className="px-3 py-3 text-center">—</td>
+                    <td className="px-3 py-3 text-center">—</td>
+                    <td className="px-3 py-3 text-center">—</td>
+                    <td className="px-3 py-3 text-center">—</td>
+                    <td className="px-3 py-3 text-center text-amber-600">{fmtNum(totals.maintenanceCost)}</td>
+                    <td className="px-3 py-3 text-center">—</td>
+                    <td className="px-3 py-3 text-center">{fmtNum(totals.totalCost)}</td>
+                    <td className="px-3 py-3" />
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </div>
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
     </div>
   )

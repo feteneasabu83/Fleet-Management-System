@@ -10,9 +10,6 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "baseUrl": "./",
-    "paths": {
-      "@shared/*": ["../shared/src/*"]
-    },
 
     /* === Decorator & Metadata Support === */
     "emitDecoratorMetadata": true,
@@ -40,7 +37,6 @@
     "node_modules",
     "dist",
     "test",
-    "**/*.spec.ts",
-    "src/friends/**"
+    "**/*.spec.ts"
   ]
 }

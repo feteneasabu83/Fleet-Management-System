@@ -93,8 +93,6 @@ export async function POST(req: NextRequest) {
           userType: (body as any).userType,
           status: (body as any).status,
           moduleRoles: (body as any).moduleRoles || {},
-          helpdeskRole: (body as any).helpdeskRole || '',
-          kbRole: (body as any).kbRole || '',
           createdAt: now,
           lastLogin: null,
           message: 'Mock user created (backend offline)'

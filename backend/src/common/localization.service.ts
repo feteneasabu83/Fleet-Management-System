@@ -90,100 +90,6 @@ export class LocalizationService {
       [Language.WO]: "Ceet",
     },
 
-    // Ticket related
-    "ticket.title": {
-      [Language.EN]: "Ticket",
-      [Language.AM]: "ትኬት",
-      [Language.OR]: "Tikeetii",
-      [Language.TI]: "ትኬት",
-      [Language.SO]: "Tikidh",
-      [Language.SI]: "Tikidh",
-      [Language.WO]: "Billet",
-    },
-    "ticket.status.open": {
-      [Language.EN]: "Open",
-      [Language.AM]: "ክፍት",
-      [Language.OR]: "Banaa",
-      [Language.TI]: "ክፉት",
-      [Language.SO]: "Furan",
-      [Language.SI]: "Furan",
-      [Language.WO]: "Ubbi",
-    },
-    "ticket.status.in_progress": {
-      [Language.EN]: "In Progress",
-      [Language.AM]: "በሂደት ላይ",
-      [Language.OR]: "Adeemsa keessa",
-      [Language.TI]: "ኣብ መስርሕ",
-      [Language.SO]: "Socda",
-      [Language.SI]: "Socda",
-      [Language.WO]: "Dëgg na",
-    },
-    "ticket.status.resolved": {
-      [Language.EN]: "Resolved",
-      [Language.AM]: "ተፈትቷል",
-      [Language.OR]: "Furmaata argateera",
-      [Language.TI]: "ተፈቲሑ",
-      [Language.SO]: "La xalliyay",
-      [Language.SI]: "La xalliyay",
-      [Language.WO]: "Dafa ñu ko wax",
-    },
-    "ticket.priority.low": {
-      [Language.EN]: "Low",
-      [Language.AM]: "ዝቅተኛ",
-      [Language.OR]: "Gadi",
-      [Language.TI]: "ትሑት",
-      [Language.SO]: "Hoose",
-      [Language.SI]: "Hoose",
-      [Language.WO]: "Suuf",
-    },
-    "ticket.priority.medium": {
-      [Language.EN]: "Medium",
-      [Language.AM]: "መካከለኛ",
-      [Language.OR]: "Giddu galeessa",
-      [Language.TI]: "ማእከላይ",
-      [Language.SO]: "Dhexe",
-      [Language.SI]: "Dhexe",
-      [Language.WO]: "Diggu",
-    },
-    "ticket.priority.high": {
-      [Language.EN]: "High",
-      [Language.AM]: "ከፍተኛ",
-      [Language.OR]: "Ol'aanaa",
-      [Language.TI]: "ልዑል",
-      [Language.SO]: "Sare",
-      [Language.SI]: "Sare",
-      [Language.WO]: "Gëstu",
-    },
-    "ticket.priority.urgent": {
-      [Language.EN]: "Urgent",
-      [Language.AM]: "አስቸኳይ",
-      [Language.OR]: "Ariifataa",
-      [Language.TI]: "ህጹጽ",
-      [Language.SO]: "Degdeg ah",
-      [Language.SI]: "Degdeg ah",
-      [Language.WO]: "Suuf na",
-    },
-
-    // Knowledge Base
-    "kb.article": {
-      [Language.EN]: "Article",
-      [Language.AM]: "ጽሑፍ",
-      [Language.OR]: "Barreeffama",
-      [Language.TI]: "ጽሑፍ",
-      [Language.SO]: "Maqaal",
-      [Language.SI]: "Maqaal",
-      [Language.WO]: "Bind",
-    },
-    "kb.category": {
-      [Language.EN]: "Category",
-      [Language.AM]: "ምድብ",
-      [Language.OR]: "Ramaddii",
-      [Language.TI]: "ምድብ",
-      [Language.SO]: "Qaybta",
-      [Language.SI]: "Qaybta",
-      [Language.WO]: "Wàll",
-    },
-
     // User roles
     "role.general_director": {
       [Language.EN]: "General Director",
@@ -231,30 +137,10 @@ export class LocalizationService {
       [Language.WO]: "Jëfandikukat bu mujj",
     },
 
-    // Email templates
-    "email.ticket.created.subject": {
-      [Language.EN]: "New Ticket Created: {{title}}",
-      [Language.AM]: "አዲስ ትኬት ተፈጥሯል: {{title}}",
-      [Language.OR]: "Tikeetiin Haaraan Uumameera: {{title}}",
-      [Language.TI]: "ሓድሽ ትኬት ተፈጢሩ: {{title}}",
-      [Language.SO]: "Tikidh Cusub oo la sameeyay: {{title}}",
-      [Language.SI]: "Tikidh Cusub oo la sameeyay: {{title}}",
-      [Language.WO]: "Billet bu bees la sos: {{title}}",
-    },
-    "email.ticket.assigned.subject": {
-      [Language.EN]: "Ticket Assigned to You: {{title}}",
-      [Language.AM]: "ትኬት ተመድቦልዎታል: {{title}}",
-      [Language.OR]: "Tikeetiin siif ramadameera: {{title}}",
-      [Language.TI]: "ትኬት ተመዲቡልካ: {{title}}",
-      [Language.SO]: "Tikidh laguu qoondeeyay: {{title}}",
-      [Language.SI]: "Tikidh laguu qoondeeyay: {{title}}",
-      [Language.WO]: "Billet nga joxe la: {{title}}",
-    },
-
     // Notifications
     "notification.welcome": {
-      [Language.EN]: "Welcome to Ethiopian Civil Service Commission Helpdesk",
-      [Language.AM]: "ወደ የኢትዮጵያ ሲቪል ሰርቪስ ኮሚሽን የእርዳታ ዴስክ እንኳን በደህና መጡ",
+      [Language.EN]: "Welcome to Ethiopian Civil Service Commission Asset Management System",
+      [Language.AM]: "ወደ የኢትዮጵያ ሲቪል ሰርቪስ ኮሚሽን የንብረት አስተዳደር ስርዓት እንኳን በደህና መጡ",
       [Language.OR]: "Gara Desk Gargaarsa Komishina Tajaajila Siviilii Itoophiyaatti baga nagaan dhuftan",
       [Language.TI]: "ናብ ሓገዝ ዴስክ ኮሚሽን ሲቪል ሰርቪስ ኢትዮጵያ እንቋዕ ብደሓን መጻእኩም",
       [Language.SO]: "Ku soo dhawoow Miiska Caawinta Guddiga Adeegga Madaniga Itoobiya",

@@ -519,7 +519,7 @@ async getFieldManagementInfo(@Req() req: any) {
   }
 
   @ApiOperation({ summary: 'List all fleet cost registrations' })
-  @Roles(UserRole.Finance_Department, UserRole.Fleet_Manager, UserRole.ADMIN,UserRole.Department_Head,UserRole.Commissioner)
+  @Roles(UserRole.Finance_Department, UserRole.Fleet_Manager, UserRole.ADMIN,UserRole.Department_Head,UserRole.Commissioner,UserRole.END_USER)
   @Get('costs')
   async listFleetCosts() {
     return this.fleet.listFleetCosts();
