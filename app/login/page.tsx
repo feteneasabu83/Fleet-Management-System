@@ -265,12 +265,12 @@ function LoginPageInner() {
                 <label htmlFor="email" style={{ display: "block", fontSize: 12, color: "#475569", marginBottom: 6 }}>Email Address</label>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f8fafc" }}
-                  placeholder="Example@example.com"
+                  placeholder="Username or email"
                 />
               </div>
               <div>
