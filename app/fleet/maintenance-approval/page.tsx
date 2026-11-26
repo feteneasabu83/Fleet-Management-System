@@ -202,6 +202,15 @@ export default function MaintenanceApprovalPage() {
     setPrimaryRole(getCurrentUserPrimaryRole())
   }, [])
 
+  // Deep-link support: /fleet/maintenance-approval?tab=new-request
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const t = new URLSearchParams(window.location.search).get('tab')
+      if (t) setTab(t)
+    } catch {}
+  }, [])
+
   useEffect(() => { loadAll() }, [loadAll])
 
   // fetch vehicles for driver form via existing fleet endpoint
@@ -633,7 +642,7 @@ export default function MaintenanceApprovalPage() {
 
   // ---------- tabs ----------
   const driverTabs = [
-    { id: "new-request", label: "New Maintenance Request" },
+    { id: "new-request", label: "Maintenance Request" },
     { id: "my-requests", label: "My Requests" },
   ]
   const teamTabs = [
