@@ -745,6 +745,10 @@ export default function MaintenanceApprovalPage() {
                     <StatCard label="Completed" value={stats.completed} color="text-teal-600" />
                     <StatCard label="Rejected" value={stats.rejected} color="text-red-600" />
                   </div>
+                  <div className="bg-white rounded-lg shadow border p-4">
+                    <h3 className="text-base font-semibold mb-3">Requests awaiting your inspection</h3>
+                    {renderRequestTable(reviewQueue, true)}
+                  </div>
                 </>
               )}
               {isManager && (
@@ -757,6 +761,10 @@ export default function MaintenanceApprovalPage() {
                     <StatCard label="In progress" value={stats.inProgress} color="text-cyan-600" />
                     <StatCard label="Completed" value={stats.completed} color="text-teal-600" />
                     <StatCard label="Returned to driver" value={stats.returnedToDriver} color="text-purple-600" />
+                  </div>
+                  <div className="bg-white rounded-lg shadow border p-4">
+                    <h3 className="text-base font-semibold mb-3">Requests awaiting your final decision</h3>
+                    {renderRequestTable(pendingManager, true)}
                   </div>
                 </>
               )}
