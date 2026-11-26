@@ -5,6 +5,8 @@ import { RegisterDto } from "./dto/register.dto"
 import { LoginDto } from "./dto/login.dto"
 import { Request, Response } from "express"
 import { ChangePasswordDto } from "./dto/change-password.dto"
+import { ForgotPasswordDto } from "./dto/forgot-password.dto"
+import { ResetPasswordDto } from "./dto/reset-password.dto"
 import { JwtAuthGuard } from "./guards/jwt-auth.guard"
 
 @ApiTags("Auth")
@@ -63,6 +65,23 @@ async login(
   }
 }
 
+
+  @ApiOperation({ summary: "Request password reset email" })
+  @ApiResponse({ status: 200, description: "Reset email sent if account exists" })
+  @ApiBody({ type: ForgotPasswordDto })
+  @Post("forgot-password")
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto)
+  }
+
+  @ApiOperation({ summary: "Reset password using token from email" })
+  @ApiResponse({ status: 200, description: "Password reset successfully" })
+  @ApiResponse({ status: 400, description: "Invalid or expired token" })
+  @ApiBody({ type: ResetPasswordDto })
+  @Post("reset-password")
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto)
+  }
 
   @ApiOperation({ summary: "User logout" })
   @ApiResponse({ status: 200, description: "Logout successful" })

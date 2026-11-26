@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common"
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { UsersService } from "../users/users.service"
 import { LoginDto } from "./dto/login.dto"
@@ -7,6 +7,9 @@ import * as bcrypt from "bcryptjs"
 import { PrismaService } from "../prisma/prisma.service"
 import { PasswordPolicyService } from "../password-policy/password-policy.service"
 import { ChangePasswordDto } from "./dto/change-password.dto"
+import { ForgotPasswordDto } from "./dto/forgot-password.dto"
+import { ResetPasswordDto } from "./dto/reset-password.dto"
+import { EmailService } from "../common/email.service"
 
 @Injectable()
 export class AuthService {
@@ -15,6 +18,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly passwordPolicyService: PasswordPolicyService,
+    private readonly emailService: EmailService,
   ) {}
 
   // --- VALIDATE EMAIL ---
@@ -225,6 +229,67 @@ async login(loginDto: LoginDto) {
       message: "Password changed successfully",
       user: updatedUser,
     };
+  }
+
+  // --- FORGOT PASSWORD ---
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const genericMessage = "If an account exists for this email, a password reset link has been sent."
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: forgotPasswordDto.email },
+      select: { id: true, email: true, firstName: true, lastName: true, isActive: true, accountStatus: true },
+    })
+
+    // Always return the same response to avoid leaking account existence
+    if (!user || !user.isActive || user.accountStatus === 'DISABLED') {
+      return { message: genericMessage }
+    }
+
+    const resetToken = this.jwtService.sign(
+      { sub: user.id, purpose: "password-reset" },
+      { expiresIn: "1h" },
+    )
+
+    const emailResult = await this.emailService.sendPasswordResetEmail(user.email, resetToken)
+    if (!emailResult?.success) {
+      console.error("Failed to send password reset email:", emailResult?.error)
+    }
+
+    return { message: genericMessage }
+  }
+
+  // --- RESET PASSWORD ---
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    let payload: any
+    try {
+      payload = this.jwtService.verify(resetPasswordDto.token)
+    } catch {
+      throw new BadRequestException("Invalid or expired reset token")
+    }
+
+    if (payload?.purpose !== "password-reset" || !payload?.sub) {
+      throw new BadRequestException("Invalid reset token")
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, email: true, isActive: true, accountStatus: true },
+    })
+
+    if (!user || !user.isActive || user.accountStatus === 'DISABLED') {
+      throw new BadRequestException("Account is not available")
+    }
+
+    await this.validatePasswordAgainstPolicy(resetPasswordDto.password)
+
+    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 12)
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword, updatedAt: new Date() },
+    })
+
+    console.log(`Password reset completed for user: ${user.email}`)
+    return { message: "Password has been reset successfully. You can now log in." }
   }
 
   // --- VALIDATE PASSWORD AGAINST POLICY ---
