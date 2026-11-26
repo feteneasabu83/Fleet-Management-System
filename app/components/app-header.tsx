@@ -1,12 +1,10 @@
 "use client"
 import React from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { signOut, decodeJwt } from "@/app/lib/auth"
 import { FleetInboxToggle } from "@/app/components/fleet-inbox"
 import ToastHost from "@/app/components/toast"
-import { useLocalization } from "@/app/hooks/use-localization"
-import { useIsMobile } from "@/app/hooks/use-mobile"
 
 
 export default function AppHeader() {
@@ -51,9 +49,6 @@ export default function AppHeader() {
   }
 
   // Default header for all other pages
-  const router = useRouter()
-  const { currentLanguage, setLanguage } = useLocalization()
-  const isMobile = useIsMobile()
   const [userName, setUserName] = React.useState<string>("Guest")
   const [userPhotoUrl, setUserPhotoUrl] = React.useState<string | null>(null)
   const [menuOpen, setMenuOpen] = React.useState(false)
@@ -63,7 +58,6 @@ export default function AppHeader() {
   const [isDeptHead, setIsDeptHead] = React.useState(false)
   const [isTeamLead, setIsTeamLead] = React.useState(false)
   const [isEmployee, setIsEmployee] = React.useState(false)
-  const [langOpen, setLangOpen] = React.useState(false)
   const [roleLabel, setRoleLabel] = React.useState<string>("User")
 
   React.useEffect(() => {
@@ -156,72 +150,8 @@ export default function AppHeader() {
         rowGap: 8,
         minHeight: 64,
       }}>
-        {/* Left: App Name */}
-        <div style={{ display: 'flex', alignItems: 'center', minWidth: 120 }}>
-          <span style={{ 
-            color: 'white', 
-            fontWeight: 800, 
-            fontSize: '1.2rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8
-          }}>
-            Fleet Management System
-          </span>
-        </div>
-
-        {/* Right: Mobile Back/Home + Language + Fleet Inbox + User */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {isMobile && (
-            <button
-              onClick={() => {
-                try {
-                  if (window.history.length > 1) {
-                    window.history.back()
-                  } else {
-                    router.push('/fleet/request')
-                  }
-                } catch {
-                  router.push('/fleet/request')
-                }
-              }}
-              className="px-3 py-2 rounded-2xl border-2 border-white/20 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center gap-2 text-sm font-semibold"
-              title="Back / Home"
-            >
-              ←
-            </button>
-          )}
-          {/* Language Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setLangOpen(v => !v)}
-              aria-haspopup="menu"
-              aria-expanded={langOpen}
-              title={currentLanguage === 'am' ? 'አማርኛ' : 'English'}
-              className="px-3 py-2 rounded-2xl border-2 border-white/20 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center gap-2"
-            >
-              <span className="hidden sm:inline text-sm font-semibold">{currentLanguage === 'am' ? 'አማርኛ' : 'English'}</span>
-            </button>
-            {langOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 mt-2 min-w-[160px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
-              >
-                <button
-                  onClick={() => { setLanguage('am'); setLangOpen(false) }}
-                  className="w-full text-left px-4 py-2 text-[#0e3a56] font-semibold hover:bg-gray-100"
-                >
-                  አማርኛ
-                </button>
-                <button
-                  onClick={() => { setLanguage('en'); setLangOpen(false) }}
-                  className="w-full text-left px-4 py-2 text-[#0e3a56] font-semibold hover:bg-gray-100"
-                >
-                  English
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Right: Fleet Inbox + User */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
           <FleetInboxToggle />
           <button
             onClick={() => setMenuOpen((v: boolean) => !v)}
