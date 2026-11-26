@@ -21,6 +21,7 @@ type NavItem = {
   label: string;
   href: string;
   match?: string[];
+  indent?: boolean;
 };
 
 export default function VerticalNavigation() {
@@ -76,8 +77,8 @@ export default function VerticalNavigation() {
           { icon: Wrench, label: isDriver ? "የጥገና መጠየቂያ" : "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] },
           ...(isDriver
             ? [
-                { icon: Plus, label: "Maintenance Request", href: "/fleet/maintenance-approval?tab=new-request", match: ["/fleet/maintenance-approval"] },
-                { icon: FileText, label: "My Requests", href: "/fleet/maintenance-approval?tab=my-requests", match: ["/fleet/maintenance-approval"] },
+                { icon: Plus, label: "Maintenance Request", href: "/fleet/maintenance-approval?tab=new-request", match: ["/fleet/maintenance-approval"], indent: true },
+                { icon: FileText, label: "My Requests", href: "/fleet/maintenance-approval?tab=my-requests", match: ["/fleet/maintenance-approval"], indent: true },
               ]
             : []),
         ]
@@ -120,6 +121,8 @@ export default function VerticalNavigation() {
                 key={item.href + item.label}
                 onClick={() => router.push(item.href)}
                 className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all duration-150 ${
+                  item.indent ? "pl-9 " : ""
+                }${
                   active
                     ? "bg-sky-500/15 text-sky-300"
                     : "text-slate-300 hover:bg-white/5 hover:text-white"
