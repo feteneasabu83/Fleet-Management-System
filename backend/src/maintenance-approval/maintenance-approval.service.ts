@@ -343,7 +343,7 @@ export class MaintenanceApprovalService {
     const existing = await this.prisma.maintenanceTask.findUnique({ where: { requestId: id } })
 
     const data: any = {
-      technicianId: dto.technicianId ?? existing?.technicianId ?? null,
+      technicianId: dto.technicianId || existing?.technicianId || null,
       workshop: dto.workshop ?? existing?.workshop ?? null,
       repairStartDate: dto.repairStartDate ? new Date(dto.repairStartDate) : existing?.repairStartDate ?? null,
       partsUsed: dto.partsUsed !== undefined ? JSON.stringify(dto.partsUsed) : existing?.partsUsed ?? null,
