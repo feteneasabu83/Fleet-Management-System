@@ -589,6 +589,7 @@ ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${log
 
 <p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;<b style="text-decoration:underline;">ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${u(plate, 160)}</p>
 
+<p>የተጔዥዎቹ&nbsp;&nbsp;ስም ሀ&nbsp;${u(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${u('', 200)}&nbsp;&nbsp;ሐ&nbsp;${u('', 200)}&nbsp;&nbsp;መ&nbsp;${u('', 200)}</p>
 
 <p>የሚሄዱበት ስፍራ&nbsp;${u(request.destination, 620)}</p>
 
