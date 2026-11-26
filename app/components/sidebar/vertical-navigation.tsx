@@ -73,7 +73,7 @@ export default function VerticalNavigation() {
     { icon: Fuel, label: "የነዳጅ እና የመኪና ጥገና መጠየቂያ", href: "/fleet/request?tab=fuel", match: ["/fleet/request"] },
     ...(isDriver || isMaintenanceTeam || isFleetManag || isAdmin
       ? [
-          { icon: Wrench, label: "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] },
+          { icon: Wrench, label: isDriver ? "የጥገና መጠየቂያ" : "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] },
           ...(isDriver
             ? [
                 { icon: Plus, label: "Maintenance Request", href: "/fleet/maintenance-approval?tab=new-request", match: ["/fleet/maintenance-approval"] },
