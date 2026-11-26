@@ -448,13 +448,6 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
 
-    const fill = (value: string, width = 220) =>
-      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value) || '&nbsp;'}</span>`;
-    const line = (width = 700) =>
-      `<div style="border-bottom:1px solid #000;height:14px;width:${width}px;margin:2px 0;"></div>`;
-    const writeline = (value: string, width = 700) =>
-      `<div style="border-bottom:1px solid #000;width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value)}</div>`;
-
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head>
@@ -474,19 +467,18 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
-<p><span class="lbl">የመሥራ በ/ቱ ስም</span>&nbsp;&nbsp;&nbsp;<b>ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የሰሌዳ ቁጥር</span>&nbsp;${fill(plate, 160)}</p>
+<p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;ሲቪል ሰርቪስ ኮሚሽን&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${escapeHtml(plate)}----------------------</p>
 
-<p><span class="lbl">የተጔዥዎቹ ስም</span>&nbsp;&nbsp;ሀ&nbsp;${fill(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${fill('', 200)}&nbsp;&nbsp;ሐ&nbsp;${fill('', 200)}&nbsp;&nbsp;መ&nbsp;${fill('', 200)}</p>
+<p>የተጔዥዎቹ&nbsp;&nbsp;ስም ሀ&nbsp;${escapeHtml(driverName)}-------------------------------------ለ--------------------------------- ሐ-----------------------------------መ--------------------------------</p>
 
-<p><span class="lbl">የሚሄዱበት ስፍራ</span></p>
-${writeline(request.destination, 720)}
+<p>የሚሄዱበት ስፍራ&nbsp;${escapeHtml(request.destination)}--------------------------------------------------------------------------------------------</p>
 
-<p><span class="lbl">ምክንያት</span></p>
-${writeline(request.purpose, 720)}
+<p>ምክንያት&nbsp;${escapeHtml(request.purpose)}----------------------------------------------------------------------------------------------------</p>
 
-<p><span class="lbl">አገልግሎቱን የሚፈልግበት ጊዜ</span>&nbsp;${fill(fromLabel, 140)}&nbsp;<span class="lbl">እስከ</span>&nbsp;${fill(toLabel, 140)}</p>
+<p>አገልግሎቱን የሚፈልግበት ጊዜ&nbsp;${escapeHtml(fromLabel)}--------------------------------------------እስከ&nbsp;${escapeHtml(toLabel)}&nbsp;--------------------------</p>
 
-<p><span class="lbl">የጠያቂው ስምና ፊሪማ</span>&nbsp;&nbsp;${fill(requesterName, 200)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የጠያቂው ሃላፊ ስምና ፊሪማ</span>&nbsp;&nbsp;${fill(`${request.department.name} ሃላፊ`, 200)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የፈቀደው ሃላፊ ስምና ፊሪማ</span>&nbsp;&nbsp;${fill('ንጉሴ አብረሃም', 200)}</p>
+<p>የጠያቂው ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(requesterName)}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የጠያቂው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(request.department.name)} ሃላፊ&nbsp;&nbsp;&nbsp;&nbsp;የፈቀደው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;ንጉሴ አብረሃም</p>
+<p>----------------------------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------</p>
 
 <br>
 
@@ -525,9 +517,9 @@ ${writeline(request.purpose, 720)}
 
 <br>
 
-<p>ከሂህ በ____________________ የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ፡፡</p>
+<p>ከሂህ በላ የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ</p>
 
-<p><span class="lbl">የሾፌሩ ስም</span>&nbsp;&nbsp;${fill(driverName, 320)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ፊሪማ</span>&nbsp;${fill('', 160)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ቀን</span>&nbsp;${fill(tripDateLabel, 160)}</p>
+<p>የሾፌሩ ስም&nbsp;${escapeHtml(driverName)}--------------------------------------------------------ፊሪማ------------------------------------ ቀን&nbsp;${escapeHtml(tripDateLabel)}--------------------------------</p>
 
 <br>
 
