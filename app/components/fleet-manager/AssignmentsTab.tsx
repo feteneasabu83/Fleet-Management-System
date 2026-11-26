@@ -584,7 +584,7 @@ ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${log
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
-<p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;<b>ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${u(plate, 160)}</p>
+<p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;<b style="border-bottom:1px solid #000;">ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${u(plate, 160)}</p>
 
 <p>የተጔዥዎቹ&nbsp;&nbsp;ስም ሀ&nbsp;${u(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${u('', 200)}&nbsp;&nbsp;ሐ&nbsp;${u('', 200)}&nbsp;&nbsp;መ&nbsp;${u('', 200)}</p>
 
