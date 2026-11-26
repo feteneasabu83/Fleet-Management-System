@@ -572,7 +572,7 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 </head>
 <body>
 
-${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${logoDataUri}" alt="FCSC" style="height:70px;" /></p>` : ''}
+${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${logoDataUri}" alt="FCSC" style="height:35px;" /></p>` : ''}
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
