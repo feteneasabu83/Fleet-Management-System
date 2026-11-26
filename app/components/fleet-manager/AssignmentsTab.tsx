@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { useToast } from "@/app/components/toast-provider";
+import { getAuthUser } from "@/app/lib/session";
 import { AssignmentRequest } from './types';
 
 interface AssignmentsTabProps {
@@ -490,6 +491,9 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const { plate } = getVehicleInfo(request, vehicle);
     const requesterName = `${request.requestor.firstName || ''} ${request.requestor.middleName ? request.requestor.middleName + ' ' : ''}${request.requestor.lastName || ''}`.trim();
 
+    const authUser = getAuthUser();
+    const managerName = `${authUser?.firstName || ''} ${authUser?.lastName || ''}`.trim();
+
     const fromLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
@@ -529,10 +533,11 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
               <td style="${td}"></td>
               <td style="${td}text-align:right;">${h.passengerCount ?? '-'}</td>
               <td style="${td}text-align:right;">${h.kmPerLiter ?? '-'}</td>
+              <td style="${td}">${escapeHtml(managerName)}</td>
             </tr>`;
           })
           .join('')
-      : `<tr><td colspan="11" style="${td}text-align:center;">ምንም የተጠናቀቀ መስክ ጉዞዎች አልተገኙም</td></tr>`;
+      : `<tr><td colspan="12" style="${td}text-align:center;">ምንም የተጠናቀቀ መስክ ጉዞዎች አልተገኙም</td></tr>`;
 
     const tripHistoryTable = `<p class="lbl" style="margin-top:10px;">የመስክ ታሪክ (Completed Trips)</p>
 <table style="border-collapse:collapse;width:100%;table-layout:fixed;font-size:8pt;margin:4px 0 8px 0;">
@@ -544,6 +549,7 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     <th colspan="2" style="${th}width:16%;">የጫነው ዕቃ</th>
     <th rowspan="2" style="${th}width:7%;">የጫነው ሰው ብዛት</th>
     <th rowspan="2" style="${th}width:10%;">ተሽከርካሪዉ በሊትር የሚሸፍነዉ ኪ.ሜ</th>
+    <th rowspan="2" style="${th}width:9%;">የተቆጣጣሪው ፊሪማ</th>
   </tr>
   <tr>
     <th style="${th}width:13%;">ስፍራ</th>
