@@ -490,8 +490,38 @@ ${line(720)}
 
 <br>
 
-<p class="log"><b>ቀን</b>&nbsp;&nbsp;<b>የተሰሳበት ስፍራ ኪ.ሜ</b>&nbsp;&nbsp;<b>የተመለሰበት ኪ.ሜ ሰዓት</b>&nbsp;&nbsp;<b>የኪ.ሜ ልዩነት</b>&nbsp;&nbsp;<b>የጫነው ዕቃ</b>&nbsp;&nbsp;<b>የጫነው ሰው ብዛት</b>&nbsp;&nbsp;<b>ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ</b>&nbsp;&nbsp;<b>የተቆጣጣሪው ፊሪማ</b></p>
-<p class="log">${escapeHtml(tripDateLabel)}&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________</p>
+<table style="border-collapse:collapse;width:100%;font-size:9pt;margin:8px 0;">
+  <tr>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ቀን</th>
+    <th colspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተሰሳበት ስፍራ ኪ.ሜ</th>
+    <th colspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተመለሰበት ኪ.ሜ ሰዓት</th>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የኪ.ሜ ልዩነት</th>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የጫነው ዕቃ</th>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የጫነው ሰው ብዛት</th>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ</th>
+    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተቆጣጣሪው ፊሪማ</th>
+  </tr>
+  <tr>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ስፍራ</th>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ኪ.ሜ</th>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ኪ.ሜ</th>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ሰዓት</th>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የዕቃው ዓይነት</th>
+    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ክብደት</th>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:4px 6px;text-align:center;">${escapeHtml(tripDateLabel)}</td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+    <td style="border:1px solid #000;padding:4px 6px;"></td>
+  </tr>
+</table>
 
 <br>
 
