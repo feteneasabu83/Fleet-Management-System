@@ -1,6 +1,5 @@
 "use client"
 import React from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { signOut, decodeJwt } from "@/app/lib/auth"
@@ -60,7 +59,6 @@ export default function AppHeader() {
   const [isTeamLead, setIsTeamLead] = React.useState(false)
   const [isEmployee, setIsEmployee] = React.useState(false)
   const [roleLabel, setRoleLabel] = React.useState<string>("User")
-  const [showFleetDashboard, setShowFleetDashboard] = React.useState(false)
 
   React.useEffect(() => {
     try {
@@ -101,8 +99,6 @@ export default function AppHeader() {
         const hrSupervisor = upperRoles.includes('HR_SUPERVISOR') || upperRoles.includes('HR SUPERVISOR') || upperRoles.includes('HR-SUPERVISOR')
         const fleetManager = upperRoles.includes('FLEET_MANAGER') || upperRoles.includes('FLEET MANAGER') || upperRoles.includes('FLEET-MANAGER')
         const endUser = upperRoles.includes('END_USER') || upperRoles.includes('END USER') || upperRoles.includes('END-USER')
-
-        setShowFleetDashboard(isAdm || hrSupervisor || fleetManager)
 
         let label = 'User'
         if (isAdm) label = 'System Admin'
@@ -154,16 +150,6 @@ export default function AppHeader() {
         rowGap: 8,
         minHeight: 64,
       }}>
-        {/* Left: Dashboard */}
-        {showFleetDashboard && (
-          <Link
-            href="/fleet/manager"
-            style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            Dashboard
-          </Link>
-        )}
-
         {/* Right: Fleet Inbox + User */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
           <FleetInboxToggle />

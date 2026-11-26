@@ -45,16 +45,14 @@ export default function RootLayout({
       >
         <LocalizationProvider>
           <ToastProvider>
-            <div className="flex flex-1 min-h-screen flex-row">
+            <AppHeader />
+            <div className="flex flex-1 min-h-[calc(100vh-84px)] flex-row">
               <SidebarContainer />
-              <div className="flex min-h-screen w-full flex-1 flex-col bg-transparent">
-                <AppHeader />
-                <main className="flex min-h-0 w-full flex-1 flex-col">
-                  {/* Fleet manager chart (client-side) */}
-                  <FleetReportWidget />
-                  {children}
-                </main>
-              </div>
+              <main className="flex min-h-[calc(100vh-84px)] w-full flex-1 flex-col bg-transparent">
+                {/* Fleet manager chart (client-side) */}
+                <FleetReportWidget />
+                {children}
+              </main>
             </div>
             <Footer />
             <ToastView />
