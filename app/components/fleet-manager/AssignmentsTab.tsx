@@ -455,6 +455,37 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
       logoDataUri = '';
     }
 
+    // Fetch the assigned driver's completed trip history (same TripHistory
+    // source that powers the driver "የመስክ ታሪክ (Completed Trips)" table)
+    const driverId =
+      (vehicle as any)?.driver?.id ||
+      (vehicle as any)?.driverId ||
+      (vehicle as any)?.userId ||
+      null;
+
+    let tripHistory: any[] = [];
+    if (driverId) {
+      try {
+        const token = localStorage.getItem('accessToken') || '';
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+        const histRes = await fetch(`${apiBase}/api/fleet/trip-history/manager/all`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const histJson = await histRes.json().catch(() => ({}));
+        const items: any[] = Array.isArray(histJson?.data)
+          ? histJson.data
+          : Array.isArray(histJson)
+            ? histJson
+            : [];
+        tripHistory = items
+          .filter((h: any) => h.driverId === driverId)
+          .sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+          .slice(0, 8);
+      } catch {
+        tripHistory = [];
+      }
+    }
+
     const { driverName, driverPhone } = getDriverInfo(request, vehicle);
     const { plate } = getVehicleInfo(request, vehicle);
     const requesterName = `${request.requestor.firstName || ''} ${request.requestor.middleName ? request.requestor.middleName + ' ' : ''}${request.requestor.lastName || ''}`.trim();
@@ -467,6 +498,64 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
       const hasValue = !!String(value ?? '').trim();
       return `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 4px;${hasValue ? 'font-weight:bold;' : ''}">${escapeHtml(value) || '&nbsp;'}</span>`;
     };
+
+    const fmtDocDate = (v: any) => {
+      if (!v) return '-';
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB');
+    };
+    const fmtDocTime = (v: any) => {
+      if (!v) return '-';
+      const s = String(v);
+      return s.length >= 5 ? s.slice(0, 5) : s;
+    };
+    const cell = 'border:1px solid #000;padding:3px 4px;';
+    const th = `${cell}background:#d9d9d9;text-align:center;`;
+    const td = `${cell}font-size:8pt;`;
+
+    const tripRowsHtml = tripHistory.length
+      ? tripHistory
+          .map((h: any, i: number) => {
+            const plate = h.vehiclePlate || h.vehicle?.plate || '';
+            const retTime = h.returnTime || h.endTime || '';
+            return `<tr>
+              <td style="${td}text-align:center;">${i + 1}</td>
+              <td style="${td}">${escapeHtml(h.requesterName || '')}</td>
+              <td style="${td}">${escapeHtml(plate)}</td>
+              <td style="${td}">${escapeHtml(h.destination || '')}</td>
+              <td style="${td}">${escapeHtml(h.purpose || '')}</td>
+              <td style="${td}">${fmtDocDate(h.date)}</td>
+              <td style="${td}">${fmtDocTime(h.startTime)}</td>
+              <td style="${td}text-align:right;">${h.kmPerLiter ?? '-'}</td>
+              <td style="${td}text-align:right;">${h.startOdometerKm ?? '-'}</td>
+              <td style="${td}text-align:right;">${h.odometerKmDiff ?? '-'}</td>
+              <td style="${td}text-align:right;">${h.returnOdometerKm ?? '-'}</td>
+              <td style="${td}">${fmtDocTime(retTime)}</td>
+              <td style="${td}text-align:right;">${h.passengerCount ?? '-'}</td>
+            </tr>`;
+          })
+          .join('')
+      : `<tr><td colspan="13" style="${td}text-align:center;">ምንም የተጠናቀቀ መስክ ጉዞዎች አልተገኙም</td></tr>`;
+
+    const tripHistoryTable = `<p class="lbl" style="margin-top:10px;">የመስክ ታሪክ (Completed Trips)</p>
+<table style="border-collapse:collapse;width:100%;table-layout:fixed;font-size:8pt;margin:4px 0 8px 0;">
+  <tr>
+    <th style="${th}width:4%;">№</th>
+    <th style="${th}width:11%;">የጠየቀው ስም</th>
+    <th style="${th}width:9%;">ተሽከርካሪ</th>
+    <th style="${th}width:11%;">የሚሄድበት ቦታ</th>
+    <th style="${th}width:11%;">የመስኩ አላማ</th>
+    <th style="${th}width:8%;">የመስክ ቀን</th>
+    <th style="${th}width:7%;">የተነሳበት ሰዓት</th>
+    <th style="${th}width:8%;">ተሽከርካሪዉ በሊትር የሚሸፍነዉ ኪሜ</th>
+    <th style="${th}width:7%;">የተነሳበት ኪ.ሜ</th>
+    <th style="${th}width:7%;">የኪ.ሜ ልዩነት</th>
+    <th style="${th}width:7%;">የተመለሰበት ኪ.ሜ</th>
+    <th style="${th}width:7%;">የተመለሰበት ሰዓት</th>
+    <th style="${th}width:7%;">የጫነዉ ሰዉ ብዛት</th>
+  </tr>
+  ${tripRowsHtml}
+</table>`;
 
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
@@ -503,39 +592,7 @@ ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${log
 
 <br>
 
-<table style="border-collapse:collapse;width:100%;table-layout:fixed;font-size:9pt;margin:8px 0;">
-  <tr>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ቀን</th>
-    <th colspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተሰሳበት ስፍራ ኪ.ሜ</th>
-    <th colspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተመለሰበት ኪ.ሜ ሰዓት</th>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የኪ.ሜ ልዩነት</th>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የጫነው ዕቃ</th>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የጫነው ሰው ብዛት</th>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ</th>
-    <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተቆጣጣሪው ፊሪማ</th>
-  </tr>
-  <tr>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ስፍራ</th>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ኪ.ሜ</th>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ኪ.ሜ</th>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ሰዓት</th>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የዕቃው ዓይነት</th>
-    <th style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ክብደት</th>
-  </tr>
-  <tr>
-    <td style="border:1px solid #000;padding:4px 6px;text-align:center;">${escapeHtml(tripDateLabel)}</td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-    <td style="border:1px solid #000;padding:4px 6px;"></td>
-  </tr>
-  ${'<tr>' + '<td style="border:1px solid #000;padding:10px 6px;"></td>'.repeat(10) + '</tr>'.repeat(4)}
-</table>
+${tripHistoryTable}
 
 <br>
 
