@@ -437,8 +437,23 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
       .replace(/"/g, '&quot;');
 
   // Download a Word (.doc) travel permit form for a single assigned vehicle row
-  const downloadPermitDoc = (request: AssignmentRequest, vehicle: any) => {
+  const downloadPermitDoc = async (request: AssignmentRequest, vehicle: any) => {
     if (typeof window === 'undefined') return;
+
+    // Embed the FCSC logo as base64 so the .doc is self-contained
+    let logoDataUri = '';
+    try {
+      const logoRes = await fetch('/gallery/FCSC.jpg');
+      const logoBlob = await logoRes.blob();
+      logoDataUri = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(logoBlob);
+      });
+    } catch {
+      logoDataUri = '';
+    }
 
     const { driverName, driverPhone } = getDriverInfo(request, vehicle);
     const { plate } = getVehicleInfo(request, vehicle);
@@ -467,6 +482,8 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 </style>
 </head>
 <body>
+
+${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${logoDataUri}" alt="FCSC" style="height:70px;" /></p>` : ''}
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
