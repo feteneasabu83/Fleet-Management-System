@@ -515,20 +515,20 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 
     const tripRowsHtml = tripHistory.length
       ? tripHistory
-          .map((h: any, i: number) => {
+          .map((h: any) => {
             const retTime = h.returnTime || h.endTime || '';
             return `<tr>
-              <td style="${td}text-align:center;">${i + 1}</td>
               <td style="${td}">${fmtDocDate(h.date)}</td>
-              <td style="${td}">${fmtDocTime(h.startTime)}</td>
-              <td style="${td}text-align:right;">${h.kmPerLiter ?? '-'}</td>
+              <td style="${td}">${escapeHtml(h.destination || '')}</td>
               <td style="${td}text-align:right;">${h.startOdometerKm ?? '-'}</td>
-              <td style="${td}text-align:right;">${h.odometerKmDiff ?? '-'}</td>
+              <td style="${td}">${fmtDocTime(h.startTime)}</td>
               <td style="${td}text-align:right;">${h.returnOdometerKm ?? '-'}</td>
               <td style="${td}">${fmtDocTime(retTime)}</td>
+              <td style="${td}text-align:right;">${h.odometerKmDiff ?? '-'}</td>
+              <td style="${td}"></td>
+              <td style="${td}"></td>
               <td style="${td}text-align:right;">${h.passengerCount ?? '-'}</td>
-              <td style="${td}"></td>
-              <td style="${td}"></td>
+              <td style="${td}text-align:right;">${h.kmPerLiter ?? '-'}</td>
             </tr>`;
           })
           .join('')
@@ -537,20 +537,22 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const tripHistoryTable = `<p class="lbl" style="margin-top:10px;">የመስክ ታሪክ (Completed Trips)</p>
 <table style="border-collapse:collapse;width:100%;table-layout:fixed;font-size:8pt;margin:4px 0 8px 0;">
   <tr>
-    <th rowspan="2" style="${th}width:5%;">№</th>
-    <th rowspan="2" style="${th}width:10%;">የመስክ ቀን</th>
-    <th rowspan="2" style="${th}width:8%;">የተነሳበት ሰዓት</th>
-    <th rowspan="2" style="${th}width:10%;">ተሽከርካሪዉ በሊትር የሚሸፍነዉ ኪሜ</th>
-    <th rowspan="2" style="${th}width:8%;">የተነሳበት ኪ.ሜ</th>
-    <th rowspan="2" style="${th}width:8%;">የኪ.ሜ ልዩነት</th>
-    <th rowspan="2" style="${th}width:8%;">የተመለሰበት ኪ.ሜ</th>
-    <th rowspan="2" style="${th}width:9%;">የተመለሰበት ሰዓት</th>
-    <th rowspan="2" style="${th}width:8%;">የጫነው ሰው ብዛት</th>
-    <th colspan="2" style="${th}width:26%;">የጫነው ዕቃ</th>
+    <th rowspan="2" style="${th}width:9%;">ቀን</th>
+    <th colspan="3" style="${th}width:27%;">የተነሳበት</th>
+    <th colspan="2" style="${th}width:14%;">የተመለሰበት</th>
+    <th rowspan="2" style="${th}width:7%;">የኪ.ሜ ልዩነት</th>
+    <th colspan="2" style="${th}width:16%;">የጫነው ዕቃ</th>
+    <th rowspan="2" style="${th}width:7%;">የጫነው ሰው ብዛት</th>
+    <th rowspan="2" style="${th}width:10%;">ተሽከርካሪዉ በሊትር የሚሸፍነዉ ኪ.ሜ</th>
   </tr>
   <tr>
-    <th style="${th}width:13%;">የዕቃው ዓይነት</th>
-    <th style="${th}width:13%;">የዕቃው ክብደት</th>
+    <th style="${th}width:13%;">ስፍራ</th>
+    <th style="${th}width:7%;">ኪ.ሜ</th>
+    <th style="${th}width:7%;">ሰዓት</th>
+    <th style="${th}width:7%;">ኪ.ሜ</th>
+    <th style="${th}width:7%;">ሰዓት</th>
+    <th style="${th}width:8%;">የዕቃው ዓይነት</th>
+    <th style="${th}width:8%;">የዕቃው ክብደት</th>
   </tr>
   ${tripRowsHtml}
 </table>`;
