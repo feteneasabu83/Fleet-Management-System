@@ -651,7 +651,7 @@ export default function MaintenanceApprovalPage() {
 
   // ---------- render ----------
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 w-full">
       {toast && <div className="fixed top-4 right-4 z-[60] bg-green-600 text-white px-4 py-2 rounded shadow">{toast}</div>}
 
       <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
