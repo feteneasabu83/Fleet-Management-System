@@ -463,8 +463,10 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
 
-    const u = (value: string, width = 200) =>
-      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 4px;">${escapeHtml(value) || '&nbsp;'}</span>`;
+    const u = (value: string, width = 200) => {
+      const hasValue = !!String(value ?? '').trim();
+      return `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 4px;${hasValue ? 'font-weight:bold;' : ''}">${escapeHtml(value) || '&nbsp;'}</span>`;
+    };
 
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
