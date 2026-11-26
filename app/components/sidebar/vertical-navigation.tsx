@@ -71,9 +71,6 @@ export default function VerticalNavigation() {
   const fleetItems: NavItem[] = [
     { icon: FileText, label: "የተሽከርካሪ መጠየቂያ ቅፅ", href: "/fleet/request", match: ["/fleet/request"] },
     { icon: Fuel, label: "የነዳጅ እና የመኪና ጥገና መጠየቂያ", href: "/fleet/request?tab=fuel", match: ["/fleet/request"] },
-    ...(isMaintenanceTeam
-      ? [{ icon: LayoutDashboard, label: "Maintenance Team Dashboard", href: "/fleet/maintenance", match: ["/fleet/maintenance"] }]
-      : []),
     ...(isDriver || isMaintenanceTeam || isFleetManag || isAdmin
       ? [{ icon: Wrench, label: "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] }]
       : []),
