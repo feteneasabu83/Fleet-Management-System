@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { getCurrentUserRoles } from "@/app/lib/auth";
 import {
   Users,
-  Truck,
   Fuel,
   Wrench,
   BarChart3,
@@ -92,7 +91,6 @@ export default function VerticalNavigation() {
           { icon: BarChart3, label: "የወጪ ሪፖርት", href: "/fleet/manager/cost-report", match: ["/fleet/manager/cost-report"] },
           { icon: BarChart3, label: "ጠቅላላ ሪፖርት", href: "/fleet/manager/reports", match: ["/fleet/manager/reports"] },
           { icon: Users, label: "የሹ፜ር ማስተዳደሪያ", href: "/fleet/manager/driver-management", match: ["/fleet/manager/driver-management"] },
-          { icon: Truck, label: "Fleet Manager Dashboard", href: "/fleet/manager", match: ["/fleet/manager"] },
         ]
       : []),
     ...(isDeptHead
