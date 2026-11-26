@@ -515,6 +515,13 @@ model User {
   requestedFleetRequests       FleetRequest[]             @relation("FleetRequestRequestor")
   tripHistoryAsDriver          TripHistory[]              @relation("TripHistoryDriver")
   tripHistoryAsRequestor       TripHistory[]              @relation("TripHistoryRequestor")
+
+  // Maintenance approval workflow relations
+  maintenanceRequestsSubmitted MaintenanceRequest[]             @relation("MaintenanceRequestDriver")
+  maintenanceInspectionsDone    MaintenanceInspection[]         @relation("MaintenanceInspectionOfficer")
+  fleetManagerDecisionsMade     FleetManagerDecision[]          @relation("FleetManagerDecisionManager")
+  maintenanceTasksAssigned      MaintenanceTask[]               @relation("MaintenanceTaskTechnician")
+  maintenanceHistoryActions     MaintenanceApprovalHistory[]    @relation("MaintenanceHistoryActor")
 }
 
 // trip  history 
@@ -1164,6 +1171,7 @@ model Vehicle {
   ServiceRegistration  ServiceRegistration[]
   fuelRequests         FuelRequest[]
   TripHistory          TripHistory[]
+  maintenanceRequests  MaintenanceRequest[]
 }
 
 model FleetRequest {
@@ -1466,4 +1474,193 @@ model AnnouncementCommentReply {
 
   @@index([commentId])
   @@index([authorId])
+}
+
+// ====================================================================
+// FLEET MAINTENANCE REQUEST & APPROVAL WORKFLOW
+// ====================================================================
+
+enum MaintenanceRequestStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_MAINTENANCE_REVIEW
+  MAINTENANCE_APPROVED
+  MAINTENANCE_DISAPPROVED
+  PENDING_FLEET_MANAGER
+  FLEET_MANAGER_ACCEPTED
+  FLEET_MANAGER_REJECTED
+  IN_PROGRESS
+  COMPLETED
+  RETURNED_TO_DRIVER
+  CANCELLED
+}
+
+enum MaintenanceCategory {
+  MECHANICAL
+  ELECTRICAL
+  TIRE
+  ENGINE
+  ACCIDENT
+  ROUTINE_SERVICE
+  OTHER
+}
+
+enum VehicleCondition {
+  OPERATIONAL
+  PARTIALLY_OPERATIONAL
+  NOT_OPERATIONAL
+}
+
+enum InspectionDecision {
+  APPROVED
+  DISAPPROVED
+}
+
+enum ManagerDecision {
+  ACCEPTED
+  REJECTED
+}
+
+enum RepairVehicleStatus {
+  REPAIRED
+  PARTIALLY_REPAIRED
+  NOT_REPAIRED
+}
+
+enum WorkshopType {
+  INTERNAL
+  EXTERNAL
+}
+
+// Driver maintenance request (Form 1)
+model MaintenanceRequest {
+  id           String   @id @default(uuid()) @db.Uuid
+  requestNumber String  @unique
+  driverId     String   @db.Uuid
+  vehicleId    String   @db.Uuid
+  priority     String?  // LOW | MEDIUM | HIGH | URGENT
+  category     MaintenanceCategory
+  problemDescription String
+  vehicleCondition   VehicleCondition
+  location     String?
+  currentOdometerKm Int?
+  employeeId   String?
+  department   String?
+  phone        String?
+  attachments  String?  // JSON array of file URLs
+  status       MaintenanceRequestStatus @default(SUBMITTED)
+  submittedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  driver       User       @relation("MaintenanceRequestDriver", fields: [driverId], references: [id])
+  vehicle      Vehicle    @relation(fields: [vehicleId], references: [id])
+  inspection   MaintenanceInspection?
+  managerDecision FleetManagerDecision?
+  task         MaintenanceTask?
+  history      MaintenanceApprovalHistory[]
+
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([requestNumber])
+}
+
+// Maintenance team inspection & decision (Form 2)
+model MaintenanceInspection {
+  id            String   @id @default(uuid()) @db.Uuid
+  requestId     String   @unique @db.Uuid
+  inspectionDate DateTime @default(now())
+  inspectionOfficerId String @db.Uuid
+  officerEmployeeId  String?
+  problemVerified    Boolean
+  technicalFindings  String?
+  requiredRepairs    String?
+  estimatedPartsCost Decimal? @db.Decimal(12, 2)
+  estimatedLaborCost Decimal? @db.Decimal(12, 2)
+  estimatedOtherCost Decimal? @db.Decimal(12, 2)
+  estimatedDurationHours Float?
+  workshop       WorkshopType?
+  attachments    String?  // JSON array of file URLs
+  decision       InspectionDecision
+  decisionReason String
+  technicalJustification String?
+  decidedAt      DateTime @default(now())
+  signature      String?
+  createdAt      DateTime @default(now())
+
+  // Relations
+  request  MaintenanceRequest @relation(fields: [requestId], references: [id])
+  officer  User               @relation("MaintenanceInspectionOfficer", fields: [inspectionOfficerId], references: [id])
+
+  @@index([requestId])
+  @@index([inspectionOfficerId])
+}
+
+// Fleet manager final decision (Form 3)
+model FleetManagerDecision {
+  id           String   @id @default(uuid()) @db.Uuid
+  requestId    String   @unique @db.Uuid
+  managerId    String   @db.Uuid
+  decision     ManagerDecision
+  remarks      String
+  budgetAvailable Boolean?
+  decidedAt    DateTime @default(now())
+  signature    String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  request MaintenanceRequest @relation(fields: [requestId], references: [id])
+  manager User              @relation("FleetManagerDecisionManager", fields: [managerId], references: [id])
+
+  @@index([requestId])
+  @@index([managerId])
+}
+
+// Maintenance execution & completion (Form 4)
+model MaintenanceTask {
+  id            String   @id @default(uuid()) @db.Uuid
+  requestId     String   @unique @db.Uuid
+  technicianId  String?  @db.Uuid
+  workshop      String?
+  repairStartDate DateTime?
+  partsUsed     String?  // JSON array of {name, quantity}
+  actualCost    Decimal? @db.Decimal(12, 2)
+  repairDescription String?
+  completionDate DateTime?
+  finalOdometerKm Int?
+  vehicleStatus RepairVehicleStatus?
+  technicianRemarks String?
+  teamVerification Boolean @default(false)
+  driverConfirmation Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  request    MaintenanceRequest @relation(fields: [requestId], references: [id])
+  technician User?              @relation("MaintenanceTaskTechnician", fields: [technicianId], references: [id])
+
+  @@index([requestId])
+  @@index([technicianId])
+}
+
+// Full approval audit trail
+model MaintenanceApprovalHistory {
+  id          String   @id @default(uuid()) @db.Uuid
+  requestId   String   @db.Uuid
+  action      String
+  fromStatus  MaintenanceRequestStatus?
+  toStatus    MaintenanceRequestStatus?
+  actorId     String?  @db.Uuid
+  actorRole   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  request MaintenanceRequest @relation(fields: [requestId], references: [id])
+  actor   User?              @relation("MaintenanceHistoryActor", fields: [actorId], references: [id])
+
+  @@index([requestId])
+  @@index([actorId])
 }

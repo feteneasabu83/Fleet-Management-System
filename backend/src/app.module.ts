@@ -11,6 +11,7 @@ import * as path from 'path'
 import { DepartmentsModule } from './departments/departments.module'
 import { FleetModule } from './fleet/fleet.module'
 import { UploadModule } from './upload/upload.module'
+import { MaintenanceApprovalModule } from './maintenance-approval/maintenance-approval.module'
 
 
 @Module({
@@ -42,6 +43,7 @@ import { UploadModule } from './upload/upload.module'
     SettingsModule,
     DepartmentsModule,
     FleetModule,
+    MaintenanceApprovalModule,
     UploadModule,
     PasswordPolicyModule,
 

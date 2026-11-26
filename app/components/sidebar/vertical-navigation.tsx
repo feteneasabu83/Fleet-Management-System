@@ -34,6 +34,7 @@ export default function VerticalNavigation() {
   const [isMaintenanceTeam, setIsMaintenanceTeam] = React.useState(false);
   const [isDeptHead, setIsDeptHead] = React.useState(false);
   const [isEndUser, setIsEndUser] = React.useState(false);
+  const [isDriver, setIsDriver] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -44,6 +45,7 @@ export default function VerticalNavigation() {
       setIsHr(roles.includes("hr"));
       setIsDeptHead(roles.includes("department_head") || roles.includes("women_social_inclusion"));
       setIsEndUser(roles.includes("employee"));
+      setIsDriver(roles.includes("driver"));
     } catch (error) {
       console.error("Error loading user roles:", error);
     } finally {
@@ -71,6 +73,9 @@ export default function VerticalNavigation() {
     { icon: Fuel, label: "የነዳጅ እና የመኪና ጥገና መጠየቂያ", href: "/fleet/request?tab=fuel", match: ["/fleet/request"] },
     ...(isMaintenanceTeam
       ? [{ icon: LayoutDashboard, label: "Maintenance Team Dashboard", href: "/fleet/maintenance", match: ["/fleet/maintenance"] }]
+      : []),
+    ...(isDriver || isMaintenanceTeam || isFleetManag || isAdmin
+      ? [{ icon: Wrench, label: "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] }]
       : []),
     ...(isFleetManag || isAdmin || isHr
       ? [
