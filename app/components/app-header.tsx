@@ -59,6 +59,41 @@ export default function AppHeader() {
   const [isTeamLead, setIsTeamLead] = React.useState(false)
   const [isEmployee, setIsEmployee] = React.useState(false)
   const [roleLabel, setRoleLabel] = React.useState<string>("User")
+  const [pwFormOpen, setPwFormOpen] = React.useState(false)
+  const [pwCurrent, setPwCurrent] = React.useState("")
+  const [pwNew, setPwNew] = React.useState("")
+  const [pwBusy, setPwBusy] = React.useState(false)
+  const [pwMsg, setPwMsg] = React.useState<string | null>(null)
+
+  const submitChangePassword = async () => {
+    if (!pwCurrent || pwNew.length < 8) {
+      setPwMsg("New password must be at least 8 characters.")
+      return
+    }
+    setPwBusy(true)
+    setPwMsg(null)
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("jwt") || localStorage.getItem("token") || ""
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+      const res = await fetch(`${apiBase}/api/auth/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword: pwCurrent, newPassword: pwNew }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setPwMsg("Password changed successfully.")
+        setPwCurrent("")
+        setPwNew("")
+      } else {
+        setPwMsg(data?.message || "Failed to change password.")
+      }
+    } catch {
+      setPwMsg("Network error.")
+    } finally {
+      setPwBusy(false)
+    }
+  }
 
   React.useEffect(() => {
     try {
@@ -200,7 +235,41 @@ export default function AppHeader() {
                 zIndex: 40,
               }}
             >
-              {/* Change Password hidden — settings page removed in fleet-only build */}
+              {pwFormOpen ? (
+                <div style={{ padding: '4px 2px' }}>
+                  <input
+                    type="password"
+                    placeholder="Current password"
+                    value={pwCurrent}
+                    onChange={(e) => setPwCurrent(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', marginBottom: 6, border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, boxSizing: 'border-box' }}
+                  />
+                  <input
+                    type="password"
+                    placeholder="New password (min 8 chars)"
+                    value={pwNew}
+                    onChange={(e) => setPwNew(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', marginBottom: 6, border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, boxSizing: 'border-box' }}
+                  />
+                  {pwMsg && <div style={{ fontSize: 11, color: pwMsg.includes('success') ? '#15803d' : '#b91c1c', marginBottom: 6 }}>{pwMsg}</div>}
+                  <button
+                    onClick={submitChangePassword}
+                    disabled={pwBusy}
+                    style={{ width: '100%', padding: '6px 8px', background: '#125899', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    {pwBusy ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setPwFormOpen(true); setPwMsg(null) }}
+                  style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '8px 10px', cursor: 'pointer', color: '#111827', fontWeight: 600, borderRadius: 6 }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => ((e.target as HTMLButtonElement).style.background = '#f3f4f6')}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => ((e.target as HTMLButtonElement).style.background = 'transparent')}
+                >
+                  Change Password
+                </button>
+              )}
               <button
                 onClick={() => { setMenuOpen(false); signOut('/login') }}
                 style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '8px 10px', cursor: 'pointer', color: '#b91c1c', fontWeight: 700, borderRadius: 6 }}
