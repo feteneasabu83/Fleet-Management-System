@@ -448,6 +448,9 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
 
+    const u = (value: string, width = 200) =>
+      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 4px;">${escapeHtml(value) || '&nbsp;'}</span>`;
+
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head>
@@ -467,18 +470,17 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
-<p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;ሲቪል ሰርቪስ ኮሚሽን&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${escapeHtml(plate)}----------------------</p>
+<p>የመሥራ በ/ቱ ስም&nbsp;&nbsp;&nbsp;&nbsp;<b>ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የሰሌዳ ቁጥር&nbsp;${u(plate, 160)}</p>
 
-<p>የተጔዥዎቹ&nbsp;&nbsp;ስም ሀ&nbsp;${escapeHtml(driverName)}-------------------------------------ለ--------------------------------- ሐ-----------------------------------መ--------------------------------</p>
+<p>የተጔዥዎቹ&nbsp;&nbsp;ስም ሀ&nbsp;${u(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${u('', 200)}&nbsp;&nbsp;ሐ&nbsp;${u('', 200)}&nbsp;&nbsp;መ&nbsp;${u('', 200)}</p>
 
-<p>የሚሄዱበት ስፍራ&nbsp;${escapeHtml(request.destination)}--------------------------------------------------------------------------------------------</p>
+<p>የሚሄዱበት ስፍራ&nbsp;${u(request.destination, 620)}</p>
 
-<p>ምክንያት&nbsp;${escapeHtml(request.purpose)}----------------------------------------------------------------------------------------------------</p>
+<p>ምክንያት&nbsp;${u(request.purpose, 620)}</p>
 
-<p>አገልግሎቱን የሚፈልግበት ጊዜ&nbsp;${escapeHtml(fromLabel)}--------------------------------------------እስከ&nbsp;${escapeHtml(toLabel)}&nbsp;--------------------------</p>
+<p>አገልግሎቱን የሚፈልግበት ጊዜ&nbsp;${u(fromLabel, 140)}&nbsp;<span class="lbl">እስከ</span>&nbsp;${u(toLabel, 140)}</p>
 
-<p>የጠያቂው ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(requesterName)}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የጠያቂው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(request.department.name)} ሃላፊ&nbsp;&nbsp;&nbsp;&nbsp;የፈቀደው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;ንጉሴ አብረሃም</p>
-<p>----------------------------------&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------</p>
+<p>የጠያቂው ስምና ፊሪማ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${u(requesterName, 200)}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;የጠያቂው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;${u(`${request.department.name} ሃላፊ`, 200)}&nbsp;&nbsp;&nbsp;&nbsp;የፈቀደው ሃላፊ ስምና ፊሪማ&nbsp;&nbsp;${u('ንጉሴ አብረሃም', 200)}</p>
 
 <br>
 
@@ -517,9 +519,9 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 
 <br>
 
-<p>ከሂህ በላ የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ</p>
+<p>ከሂህ በ&nbsp;${u('', 160)}&nbsp;የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ</p>
 
-<p>የሾፌሩ ስም&nbsp;${escapeHtml(driverName)}--------------------------------------------------------ፊሪማ------------------------------------ ቀን&nbsp;${escapeHtml(tripDateLabel)}--------------------------------</p>
+<p>የሾፌሩ ስም&nbsp;${u(driverName, 300)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ፊሪማ</span>&nbsp;${u('', 140)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ቀን</span>&nbsp;${u(tripDateLabel, 140)}</p>
 
 <br>
 
