@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import Link from "next/link"
 import { getCurrentUserRoles, getCurrentUserPrimaryRole } from "@/app/lib/auth"
 
 // ---------- types ----------
@@ -210,6 +209,11 @@ export default function MaintenanceApprovalPage() {
       if (t) setTab(t)
     } catch {}
   }, [])
+
+  // Drivers have no dashboard tab — default them to the request form
+  useEffect(() => {
+    if (isDriver && tab === 'dashboard') setTab('new-request')
+  }, [isDriver, tab])
 
   useEffect(() => { loadAll() }, [loadAll])
 
@@ -640,11 +644,7 @@ export default function MaintenanceApprovalPage() {
     )
   }
 
-  // ---------- tabs ----------
-  const driverTabs = [
-    { id: "new-request", label: "Maintenance Request" },
-    { id: "my-requests", label: "My Requests" },
-  ]
+  // ---------- tabs (staff only; drivers use sidebar deep links) ----------
   const teamTabs = [
     { id: "dashboard", label: "Dashboard" },
     { id: "review", label: "Review Queue" },
@@ -655,40 +655,32 @@ export default function MaintenanceApprovalPage() {
     { id: "pending", label: "Pending Decisions" },
     { id: "register", label: "Request Register" },
   ]
-
-  const tabs = isDriver ? driverTabs : isManager ? managerTabs : teamTabs
+  const tabs = isManager ? managerTabs : teamTabs
 
   // ---------- render ----------
   return (
     <div className="p-4 md:p-6 w-full">
       {toast && <div className="fixed top-4 right-4 z-[60] bg-green-600 text-white px-4 py-2 rounded shadow">{toast}</div>}
 
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Maintenance Request & Approval</h1>
-          <p className="text-sm text-gray-500">Driver → Maintenance Team → Fleet Manager workflow</p>
-        </div>
-        <Link href="/fleet" className="text-sm text-blue-600 hover:underline">← Back to Fleet</Link>
-      </div>
-
       {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">{error}</div>}
 
-      {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200 overflow-x-auto">
-        <nav className="flex gap-1 -mb-px">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+      {isStaff && (
+        <div className="mb-6 border-b border-gray-200 overflow-x-auto">
+          <nav className="flex gap-1 -mb-px">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12 text-gray-400">Loading…</div>
