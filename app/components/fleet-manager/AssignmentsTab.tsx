@@ -124,9 +124,6 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
   // Handle page change
   const handlePageChange = (newPage: number) => {
     setAssignPage(newPage);
-    if (!initialRequests) {
-      loadAssignmentDetails(newPage);
-    }
   };
 
   // Format date for display
@@ -673,10 +670,9 @@ ${tripHistoryTable}
   };
 
   useEffect(() => {
-    if (!initialRequests) {
-      loadAssignmentDetails(assignPage);
-    }
-  }, [assignPage, initialRequests]);
+    loadAssignmentDetails(assignPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignPage]);
 
   if (loading) {
     return (
