@@ -449,9 +449,11 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
 
     const fill = (value: string, width = 220) =>
-      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value)}</span>`;
+      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value) || '&nbsp;'}</span>`;
     const line = (width = 700) =>
       `<div style="border-bottom:1px solid #000;height:14px;width:${width}px;margin:2px 0;"></div>`;
+    const writeline = (value: string, width = 700) =>
+      `<div style="border-bottom:1px solid #000;width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value)}</div>`;
 
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
@@ -477,12 +479,10 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 <p><span class="lbl">የተጔዥዎቹ ስም</span>&nbsp;&nbsp;ሀ&nbsp;${fill(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${fill('', 200)}&nbsp;&nbsp;ሐ&nbsp;${fill('', 200)}&nbsp;&nbsp;መ&nbsp;${fill('', 200)}</p>
 
 <p><span class="lbl">የሚሄዱበት ስፍራ</span></p>
-${line(720)}
-<p style="margin-top:-4px;">${escapeHtml(request.destination)}</p>
+${writeline(request.destination, 720)}
 
 <p><span class="lbl">ምክንያት</span></p>
-${line(720)}
-<p style="margin-top:-4px;">${escapeHtml(request.purpose)}</p>
+${writeline(request.purpose, 720)}
 
 <p><span class="lbl">አገልግሎቱን የሚፈልግበት ጊዜ</span>&nbsp;${fill(fromLabel, 140)}&nbsp;<span class="lbl">እስከ</span>&nbsp;${fill(toLabel, 140)}</p>
 
