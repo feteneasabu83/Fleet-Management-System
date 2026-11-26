@@ -77,6 +77,12 @@ export class MaintenanceApprovalController {
     return this.service.submitManagerDecision(id, userId, role, dto)
   }
 
+  @ApiOperation({ summary: 'List staff users selectable as technicians' })
+  @Get('technicians')
+  listTechnicians() {
+    return this.service.listTechnicians()
+  }
+
   // ---------- EXECUTION ----------
 
   @ApiOperation({ summary: 'Create/update maintenance execution record (Form 4)' })

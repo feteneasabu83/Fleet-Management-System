@@ -129,6 +129,7 @@ export default function MaintenanceApprovalPage() {
   const [myRequests, setMyRequests] = useState<MaintRequest[]>([])
   const [stats, setStats] = useState<any>(null)
   const [vehicles, setVehicles] = useState<any[]>([])
+  const [technicians, setTechnicians] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -177,15 +178,17 @@ export default function MaintenanceApprovalPage() {
     setLoading(true)
     setError(null)
     try {
-      const [dash, reqs, mine, vehs] = await Promise.all([
+      const [dash, reqs, mine, vehs, techs] = await Promise.all([
         api("/dashboard").catch(() => null),
         isStaff ? api("/requests").catch(() => []) : Promise.resolve([]),
         isDriver ? api("/requests/my").catch(() => []) : Promise.resolve([]),
         api("/requests").then(() => null).catch(() => null), // placeholder
+        isStaff ? api("/technicians").catch(() => []) : Promise.resolve([]),
       ])
       setStats(dash)
       setRequests(Array.isArray(reqs) ? reqs : [])
       setMyRequests(Array.isArray(mine) ? mine : [])
+      setTechnicians(Array.isArray(techs) ? techs : [])
     } catch (e: any) {
       setError(e?.message || "Failed to load data")
     } finally {
@@ -595,7 +598,14 @@ export default function MaintenanceApprovalPage() {
               <form onSubmit={submitTask} className="border-2 border-cyan-200 rounded-lg p-4 space-y-3">
                 <h4 className="font-semibold text-cyan-800">Form 4 — Maintenance Execution & Completion</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Field label="Technician ID"><input className={inputCls} value={form4.technicianId} onChange={(e) => setForm4({ ...form4, technicianId: e.target.value })} /></Field>
+                  <Field label="Technician">
+                    <select className={inputCls} value={form4.technicianId} onChange={(e) => setForm4({ ...form4, technicianId: e.target.value })}>
+                      <option value="">Select technician…</option>
+                      {technicians.map((t: any) => (
+                        <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.role})</option>
+                      ))}
+                    </select>
+                  </Field>
                   <Field label="Workshop"><input className={inputCls} value={form4.workshop} onChange={(e) => setForm4({ ...form4, workshop: e.target.value })} /></Field>
                   <Field label="Repair start date"><input type="datetime-local" className={inputCls} value={form4.repairStartDate} onChange={(e) => setForm4({ ...form4, repairStartDate: e.target.value })} /></Field>
                   <Field label="Actual cost"><input type="number" className={inputCls} value={form4.actualCost} onChange={(e) => setForm4({ ...form4, actualCost: e.target.value })} /></Field>

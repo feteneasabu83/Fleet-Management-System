@@ -328,6 +328,14 @@ export class MaintenanceApprovalService {
     return this.prisma.maintenanceRequest.findUnique({ where: { id }, include: requestInclude })
   }
 
+  async listTechnicians() {
+    return this.prisma.user.findMany({
+      where: { role: { in: STAFF_ROLES }, isActive: true },
+      select: { id: true, firstName: true, lastName: true, email: true, role: true },
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+    })
+  }
+
   // ---------- EXECUTION (Form 4) ----------
 
   async upsertTask(id: string, actorId: string, actorRole: UserRole, dto: any) {
@@ -341,6 +349,10 @@ export class MaintenanceApprovalService {
     }
 
     const existing = await this.prisma.maintenanceTask.findUnique({ where: { requestId: id } })
+
+    if (dto.technicianId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.technicianId)) {
+      throw new BadRequestException('Invalid technicianId: must be a user UUID')
+    }
 
     const data: any = {
       technicianId: dto.technicianId || existing?.technicianId || null,
