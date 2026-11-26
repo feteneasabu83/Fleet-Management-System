@@ -583,7 +583,21 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 </head>
 <body>
 
-${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${logoDataUri}" alt="FCSC" style="height:12px;" /></p>` : ''}
+<table style="width:100%;border-collapse:collapse;">
+  <tr>
+    <td style="width:90px;vertical-align:middle;">
+      ${logoDataUri ? `<img src="${logoDataUri}" alt="FCSC" style="height:60px;" />` : ''}
+    </td>
+    <td style="text-align:center;vertical-align:middle;">
+      <div style="font-size:16pt;font-weight:bold;letter-spacing:0.5px;">የፌዴራል ሲቪል ሰርቪስ ኮሚሽን</div>
+      <div style="font-size:10pt;color:#333;">Federal Civil Service Commission (FCSC)</div>
+    </td>
+    <td style="width:90px;vertical-align:middle;text-align:right;font-size:9pt;color:#333;">
+      የመኪና አገልግሎት<br>ቅጽ
+    </td>
+  </tr>
+</table>
+<hr style="border:none;border-top:3px double #000;margin:10px 0 16px 0;">
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
