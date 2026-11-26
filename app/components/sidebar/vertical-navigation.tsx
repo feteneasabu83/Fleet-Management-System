@@ -74,7 +74,12 @@ export default function VerticalNavigation() {
     ...(isDriver || isMaintenanceTeam || isFleetManag || isAdmin
       ? [
           { icon: Wrench, label: "የጥገና ጥያቄ ማጽደቂያ", href: "/fleet/maintenance-approval", match: ["/fleet/maintenance-approval"] },
-          { icon: Plus, label: "Maintenance Request", href: "/fleet/maintenance-approval?tab=new-request", match: ["/fleet/maintenance-approval"] },
+          ...(isDriver
+            ? [
+                { icon: Plus, label: "Maintenance Request", href: "/fleet/maintenance-approval?tab=new-request", match: ["/fleet/maintenance-approval"] },
+                { icon: FileText, label: "My Requests", href: "/fleet/maintenance-approval?tab=my-requests", match: ["/fleet/maintenance-approval"] },
+              ]
+            : []),
         ]
       : []),
     ...(isFleetManag || isAdmin || isHr
