@@ -8,7 +8,7 @@ import { Menu, X } from "lucide-react";
 const SIDEBAR_STYLE: React.CSSProperties = {
   flexShrink: 0,
   borderRight: "1px solid rgba(148, 163, 184, 0.12)",
-  background: "linear-gradient(180deg, #052e16 0%, #14532d 55%, #052e16 100%)",
+  background: "linear-gradient(180deg, #0f1a10 0%, #3a2f16 55%, #050505 100%)",
   boxShadow: "4px 0 24px rgba(2, 6, 23, 0.35)",
 };
 
@@ -38,7 +38,7 @@ export default function SidebarContainer() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open navigation menu"
-          className="fixed left-3 z-40 flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-[#14532d]/90 text-white shadow-lg backdrop-blur-sm"
+          className="fixed left-3 z-40 flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-[#3a2f16]/90 text-white shadow-lg backdrop-blur-sm"
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 76px)" }}
         >
           <Menu size={22} />
