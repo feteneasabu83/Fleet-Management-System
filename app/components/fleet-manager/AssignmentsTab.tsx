@@ -448,14 +448,10 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
     const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
 
-    const cell = 'border:1px solid #000;padding:4px 6px;font-size:11pt;';
-    const lbl = 'border:1px solid #000;padding:4px 6px;font-size:11pt;font-weight:bold;background:#f2f2f2;';
-    const val = 'border:1px solid #000;padding:4px 6px;font-size:11pt;';
-
-    const logHeaders = [
-      'ቀን', 'የተሰሳበት ስፍራ ኪ.ሜ', 'የተመለሰበት ኪ.ሜ ሰዓት', 'የኪ.ሜ ልዩነት',
-      'የጫነው ዕቃ', 'የጫነው ሰው ብዛት', 'ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ', 'የተቆጣጣሪው ፊሪማ',
-    ];
+    const fill = (value: string, width = 220) =>
+      `<span style="display:inline-block;border-bottom:1px solid #000;min-width:${width}px;padding:0 6px;font-size:11pt;">${escapeHtml(value)}</span>`;
+    const line = (width = 700) =>
+      `<div style="border-bottom:1px solid #000;height:14px;width:${width}px;margin:2px 0;"></div>`;
 
     const html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
@@ -463,89 +459,51 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 <meta charset="UTF-8">
 <title>የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</title>
 <style>
-  body { font-family: "Ebrima", "Nyala", Arial, sans-serif; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { ${cell} }
-  .lbl { ${lbl} }
-  .val { ${val} }
-  .center { text-align: center; }
-  .bold { font-weight: bold; }
-  .title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 10px; }
+  body { font-family: "Ebrima", "Nyala", "Times New Roman", Arial, serif; font-size: 11pt; }
+  .title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 14px; }
+  p { margin: 6px 0; }
+  .lbl { font-weight: bold; }
+  .log { font-size: 9pt; }
+  .log th { border-bottom: 1px solid #000; padding: 2px 4px; text-align: left; }
+  .log td { padding: 2px 4px; }
 </style>
 </head>
 <body>
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
 
-<table>
-  <tr>
-    <td class="lbl" style="width:22%">የመሥራ በ/ቱ ስም</td>
-    <td class="val" style="width:28%">ሲቪል ሰርቪስ ኮሚሽን</td>
-    <td class="lbl" style="width:22%">የሰሌዳ ቁጥር</td>
-    <td class="val" style="width:28%">${escapeHtml(plate)}</td>
-  </tr>
-  <tr>
-    <td class="lbl">የተጔዥዎቹ ስም</td>
-    <td class="val" colspan="3">${escapeHtml(driverName)}${driverPhone && driverPhone !== '-' ? ` (${escapeHtml(driverPhone)})` : ''}</td>
-  </tr>
-  <tr>
-    <td class="lbl">የሚሄዱበት ስፍራ</td>
-    <td class="val" colspan="3">${escapeHtml(request.destination)}</td>
-  </tr>
-  <tr>
-    <td class="lbl">ምክንያት</td>
-    <td class="val" colspan="3">${escapeHtml(request.purpose)}</td>
-  </tr>
-  <tr>
-    <td class="lbl">አገልግሎቱን የሚፈልግበት ጊዜ</td>
-    <td class="val" colspan="3">ከ ${escapeHtml(fromLabel)} እስከ ${escapeHtml(toLabel)}</td>
-  </tr>
-  <tr>
-    <td class="lbl">የጠያቂው ስምና ፊሪማ</td>
-    <td class="val">${escapeHtml(requesterName)}</td>
-    <td class="lbl">የጠያቂው ሃላፊ ስምና ፊሪማ</td>
-    <td class="val">${escapeHtml(request.department.name)} ሃላፊ</td>
-  </tr>
-  <tr>
-    <td class="lbl">የፈቀደው ሃላፊ ስምና ፊሪማ</td>
-    <td class="val" colspan="3">ንጉሴ አብረሃም</td>
-  </tr>
-</table>
+<p><span class="lbl">የመሥራ በ/ቱ ስም</span>&nbsp;&nbsp;&nbsp;<b>ሲቪል ሰርቪስ ኮሚሽን</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የሰሌዳ ቁጥር</span>&nbsp;${fill(plate, 160)}</p>
+
+<p><span class="lbl">የተጔዥዎቹ ስም</span>&nbsp;&nbsp;ሀ&nbsp;${fill(driverName, 200)}&nbsp;&nbsp;ለ&nbsp;${fill('', 200)}&nbsp;&nbsp;ሐ&nbsp;${fill('', 200)}&nbsp;&nbsp;መ&nbsp;${fill('', 200)}</p>
+
+<p><span class="lbl">የሚሄዱበት ስፍራ</span></p>
+${line(720)}
+<p style="margin-top:-4px;">${escapeHtml(request.destination)}</p>
+
+<p><span class="lbl">ምክንያት</span></p>
+${line(720)}
+<p style="margin-top:-4px;">${escapeHtml(request.purpose)}</p>
+
+<p><span class="lbl">አገልግሎቱን የሚፈልግበት ጊዜ</span>&nbsp;${fill(fromLabel, 140)}&nbsp;<span class="lbl">እስከ</span>&nbsp;${fill(toLabel, 140)}</p>
+
+<p><span class="lbl">የጠያቂው ስምና ፊሪማ</span>&nbsp;&nbsp;${fill(requesterName, 200)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የጠያቂው ሃላፊ ስምና ፊሪማ</span>&nbsp;&nbsp;${fill(`${request.department.name} ሃላፊ`, 200)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">የፈቀደው ሃላፊ ስምና ፊሪማ</span>&nbsp;&nbsp;${fill('ንጉሴ አብረሃም', 200)}</p>
 
 <br>
 
-<table>
-  <tr>
-    ${logHeaders.map((h) => `<th style="background:#d9d9d9;">${h}</th>`).join('')}
-  </tr>
-  <tr>
-    <td class="center">${escapeHtml(tripDateLabel)}</td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-  </tr>
-</table>
+<p class="log"><b>ቀን</b>&nbsp;&nbsp;<b>የተሰሳበት ስፍራ ኪ.ሜ</b>&nbsp;&nbsp;<b>የተመለሰበት ኪ.ሜ ሰዓት</b>&nbsp;&nbsp;<b>የኪ.ሜ ልዩነት</b>&nbsp;&nbsp;<b>የጫነው ዕቃ</b>&nbsp;&nbsp;<b>የጫነው ሰው ብዛት</b>&nbsp;&nbsp;<b>ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ</b>&nbsp;&nbsp;<b>የተቆጣጣሪው ፊሪማ</b></p>
+<p class="log">${escapeHtml(tripDateLabel)}&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________&nbsp;&nbsp;____________________</p>
 
 <br>
 
 <p>ከሂህ በ____________________ የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ፡፡</p>
 
-<table>
-  <tr>
-    <td class="lbl" style="width:30%">የሾፌሩ ስም</td>
-    <td class="val" style="width:30%">${escapeHtml(driverName)}</td>
-    <td class="lbl" style="width:20%">ፊሪማ</td>
-    <td class="val" style="width:20%"></td>
-  </tr>
-  <tr>
-    <td class="lbl">ቀን</td>
-    <td class="val" colspan="3">${escapeHtml(tripDateLabel)}</td>
-  </tr>
-</table>
+<p><span class="lbl">የሾፌሩ ስም</span>&nbsp;&nbsp;${fill(driverName, 320)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ፊሪማ</span>&nbsp;${fill('', 160)}&nbsp;&nbsp;&nbsp;&nbsp;<span class="lbl">ቀን</span>&nbsp;${fill(tripDateLabel, 160)}</p>
 
 <br>
 
-<p class="bold">1. ይህ ቅጽ በአንድ ቅጅ ከተሰራ በኋላ ከተሽከርካሪው ጋር እንዲዘዋወር ለሾፌሩ ይሰጥና አገልግሎት ሲያበቃ ለሚመለከተው ተቆጣጣሪ ስራ ክፍል ያሰረክባል፡፤<br>
-2. ይህ ቅጽ ከሥራ ሰዓት ወጭ እና በበዓላት ቃናት ለሚሰት አገልግሎት በተጨማሪነት ያገለግላል፡፡<br>
-3. ይህንን በተመለከተ የመሥራያ ቤ/ቱ የሚመለከተው ተቆጣጣሪ ሥራ ክፍል ሃላፊነት አለበት</p>
+<p><b>1.</b> ይህ ቅጽ በአንድ ቅጅ ከተሰራ በኋላ ከተሽከርካሪው ጋር እንዲዘዋወር ለሾፌሩ ይሰጥና አገልግሎት ሲያበቃ ለሚመለከተው ተቆጣጣሪ ስራ ክፍል ያሰረክባል፡፤<br>
+<b>2.</b> ይህ ቅጽ ከሥራ ሰዓት ወጭ እና በበዓላት ቃናት ለሚሰት አገልግሎት በተጨማሪነት ያገለግላል፡፡<br>
+<b>3.</b> ይህንን በተመለከተ የመሥራያ ቤ/ቱ የሚመለከተው ተቆጣጣሪ ሥራ ክፍል ሃላፊነት አለበት</p>
 
 </body>
 </html>`;
