@@ -150,6 +150,11 @@ export default function AppHeader() {
         rowGap: 8,
         minHeight: 64,
       }}>
+        {/* Left: App title */}
+        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+          Fleet Management System
+        </span>
+
         {/* Right: Fleet Inbox + User */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
           <FleetInboxToggle />
