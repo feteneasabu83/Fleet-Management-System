@@ -689,7 +689,6 @@ export default function MaintenanceApprovalPage() {
           {/* DRIVER VIEWS */}
           {isDriver && tab === "new-request" && (
             <form onSubmit={submitRequest} className="bg-white rounded-lg shadow border p-6 space-y-4 w-full">
-              <h2 className="text-lg font-semibold">Form 1 — Driver Maintenance Request</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Vehicle *">
                   <select required className={inputCls} value={form1.vehicleId} onChange={(e) => setForm1({ ...form1, vehicleId: e.target.value })}>
