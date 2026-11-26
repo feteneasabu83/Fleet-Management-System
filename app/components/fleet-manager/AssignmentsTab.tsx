@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Download } from 'lucide-react';
 import { useToast } from "@/app/components/toast-provider";
 import { AssignmentRequest } from './types';
 
@@ -428,6 +429,139 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
     URL.revokeObjectURL(url);
   };
 
+  const escapeHtml = (value: any) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  // Download a Word (.doc) travel permit form for a single assigned vehicle row
+  const downloadPermitDoc = (request: AssignmentRequest, vehicle: any) => {
+    if (typeof window === 'undefined') return;
+
+    const { driverName, driverPhone } = getDriverInfo(request, vehicle);
+    const { plate } = getVehicleInfo(request, vehicle);
+    const requesterName = `${request.requestor.firstName || ''} ${request.requestor.middleName ? request.requestor.middleName + ' ' : ''}${request.requestor.lastName || ''}`.trim();
+
+    const fromLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
+    const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
+    const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
+
+    const cell = 'border:1px solid #000;padding:4px 6px;font-size:11pt;';
+    const lbl = 'border:1px solid #000;padding:4px 6px;font-size:11pt;font-weight:bold;background:#f2f2f2;';
+    const val = 'border:1px solid #000;padding:4px 6px;font-size:11pt;';
+
+    const logHeaders = [
+      'ቀን', 'የተሰሳበት ስፍራ ኪ.ሜ', 'የተመለሰበት ኪ.ሜ ሰዓት', 'የኪ.ሜ ልዩነት',
+      'የጫነው ዕቃ', 'የጫነው ሰው ብዛት', 'ተሽከርካሪው በሊትር የሚሸፍነው ኪ.ሜ', 'የተቆጣጣሪው ፊሪማ',
+    ];
+
+    const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="UTF-8">
+<title>የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</title>
+<style>
+  body { font-family: "Ebrima", "Nyala", Arial, sans-serif; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { ${cell} }
+  .lbl { ${lbl} }
+  .val { ${val} }
+  .center { text-align: center; }
+  .bold { font-weight: bold; }
+  .title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
+
+<table>
+  <tr>
+    <td class="lbl" style="width:22%">የመሥራ በ/ቱ ስም</td>
+    <td class="val" style="width:28%">ሲቪል ሰርቪስ ኮሚሽን</td>
+    <td class="lbl" style="width:22%">የሰሌዳ ቁጥር</td>
+    <td class="val" style="width:28%">${escapeHtml(plate)}</td>
+  </tr>
+  <tr>
+    <td class="lbl">የተጔዥዎቹ ስም</td>
+    <td class="val" colspan="3">${escapeHtml(driverName)}${driverPhone && driverPhone !== '-' ? ` (${escapeHtml(driverPhone)})` : ''}</td>
+  </tr>
+  <tr>
+    <td class="lbl">የሚሄዱበት ስፍራ</td>
+    <td class="val" colspan="3">${escapeHtml(request.destination)}</td>
+  </tr>
+  <tr>
+    <td class="lbl">ምክንያት</td>
+    <td class="val" colspan="3">${escapeHtml(request.purpose)}</td>
+  </tr>
+  <tr>
+    <td class="lbl">አገልግሎቱን የሚፈልግበት ጊዜ</td>
+    <td class="val" colspan="3">ከ ${escapeHtml(fromLabel)} እስከ ${escapeHtml(toLabel)}</td>
+  </tr>
+  <tr>
+    <td class="lbl">የጠያቂው ስምና ፊሪማ</td>
+    <td class="val">${escapeHtml(requesterName)}</td>
+    <td class="lbl">የጠያቂው ሃላፊ ስምና ፊሪማ</td>
+    <td class="val">${escapeHtml(request.department.name)} ሃላፊ</td>
+  </tr>
+  <tr>
+    <td class="lbl">የፈቀደው ሃላፊ ስምና ፊሪማ</td>
+    <td class="val" colspan="3">ንጉሴ አብረሃም</td>
+  </tr>
+</table>
+
+<br>
+
+<table>
+  <tr>
+    ${logHeaders.map((h) => `<th style="background:#d9d9d9;">${h}</th>`).join('')}
+  </tr>
+  <tr>
+    <td class="center">${escapeHtml(tripDateLabel)}</td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+  </tr>
+</table>
+
+<br>
+
+<p>ከሂህ በ____________________ የተሰጠውን ትዕዛዝ በትክክል መፈጸሜን አረጋግጣለሁ፡፡</p>
+
+<table>
+  <tr>
+    <td class="lbl" style="width:30%">የሾፌሩ ስም</td>
+    <td class="val" style="width:30%">${escapeHtml(driverName)}</td>
+    <td class="lbl" style="width:20%">ፊሪማ</td>
+    <td class="val" style="width:20%"></td>
+  </tr>
+  <tr>
+    <td class="lbl">ቀን</td>
+    <td class="val" colspan="3">${escapeHtml(tripDateLabel)}</td>
+  </tr>
+</table>
+
+<br>
+
+<p class="bold">1. ይህ ቅጽ በአንድ ቅጅ ከተሰራ በኋላ ከተሽከርካሪው ጋር እንዲዘዋወር ለሾፌሩ ይሰጥና አገልግሎት ሲያበቃ ለሚመለከተው ተቆጣጣሪ ስራ ክፍል ያሰረክባል፡፤<br>
+2. ይህ ቅጽ ከሥራ ሰዓት ወጭ እና በበዓላት ቃናት ለሚሰት አገልግሎት በተጨማሪነት ያገለግላል፡፡<br>
+3. ይህንን በተመለከተ የመሥራያ ቤ/ቱ የሚመለከተው ተቆጣጣሪ ሥራ ክፍል ሃላፊነት አለበት</p>
+
+</body>
+</html>`;
+
+    const blob = new Blob(['﻿' + html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safePlate = String(plate || 'vehicle').replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.setAttribute('download', `travel_permit_${safePlate}_${tripDateLabel.replace(/\//g, '-')}.doc`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportPdf = () => {
     if (typeof window === 'undefined') return;
     const { headers, rows } = buildAssignmentsReport();
@@ -563,6 +697,7 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
               <th className="border px-2 py-2">የተመደበዉ መኪና</th>
               <th className="border px-2 py-2">የመኪና ታርጋ ቁጥር</th>
               <th className="border px-2 py-2">ሁኔታ</th>
+              <th className="border px-2 py-2 text-center">ፈቃድ</th>
             </tr>
           </thead>
           <tbody>
@@ -600,6 +735,17 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
                   <td className="border px-2 py-2 align-top">{vehicleLabel}</td>
                   <td className="border px-2 py-2 align-top">{plate}</td>
                   <td className="border px-2 py-2 align-top">{statusLabel}</td>
+                  <td className="border px-2 py-2 align-top text-center">
+                    <button
+                      type="button"
+                      onClick={() => downloadPermitDoc(request, vehicle)}
+                      title="የመዘዋወሪያ ፈቃድ ወረቀት አውርድ"
+                      className="inline-flex items-center gap-1 rounded-md bg-[#135a98] px-2 py-1 text-[11px] font-semibold text-white hover:bg-[#0f4e84] transition-colors"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      አውርድ
+                    </button>
+                  </td>
                 </tr>
               );
             })}
