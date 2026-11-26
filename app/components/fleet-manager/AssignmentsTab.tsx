@@ -503,7 +503,7 @@ ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${log
 
 <br>
 
-<table style="border-collapse:collapse;width:100%;font-size:9pt;margin:8px 0;">
+<table style="border-collapse:collapse;width:100%;table-layout:fixed;font-size:9pt;margin:8px 0;">
   <tr>
     <th rowspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">ቀን</th>
     <th colspan="2" style="border:1px solid #000;padding:3px 5px;background:#d9d9d9;">የተሰሳበት ስፍራ ኪ.ሜ</th>
@@ -534,6 +534,7 @@ ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${log
     <td style="border:1px solid #000;padding:4px 6px;"></td>
     <td style="border:1px solid #000;padding:4px 6px;"></td>
   </tr>
+  ${'<tr>' + '<td style="border:1px solid #000;padding:10px 6px;"></td>'.repeat(10) + '</tr>'.repeat(4)}
 </table>
 
 <br>
