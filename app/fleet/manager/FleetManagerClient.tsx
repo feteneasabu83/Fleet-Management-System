@@ -1,7 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts'
 import {
   Car,
   Users,
@@ -11,6 +24,7 @@ import {
   Truck,
   Wrench,
   Fuel,
+  BarChart3,
 } from 'lucide-react'
 import { useToast } from '@/app/components/toast-provider'
 import { decodeJwt } from '@/app/lib/auth'
@@ -377,6 +391,46 @@ export default function FleetManagerClient() {
     )
   }
 
+  const monthlyFuelData = useMemo(() => {
+    const months: Record<string, number> = {}
+    fuelRequests.forEach((r: any) => {
+      const d = r?.createdAt || r?.requestDate || r?.date
+      if (!d) return
+      const date = new Date(d)
+      if (Number.isNaN(date.getTime())) return
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      const amt = Number(r?.amount ?? 0)
+      months[key] = (months[key] || 0) + (Number.isFinite(amt) ? amt : 0)
+    })
+    return Object.entries(months)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([key, total]) => {
+        const [y, m] = key.split('-')
+        return { month: `${m}/${y.slice(2)}`, ነዳጅ: Math.round(total) }
+      })
+  }, [fuelRequests])
+
+  const vehicleStatusData = useMemo(() => {
+    const counts: Record<string, number> = {}
+    vehicles.forEach((v: any) => {
+      const s = String(v?.status || 'UNKNOWN').toUpperCase()
+      counts[s] = (counts[s] || 0) + 1
+    })
+    const colors: Record<string, string> = {
+      AVAILABLE: '#10b981',
+      ASSIGNED: '#3b82f6',
+      MAINTENANCE: '#f59e0b',
+      INACTIVE: '#94a3b8',
+      UNKNOWN: '#cbd5e1',
+    }
+    return Object.entries(counts).map(([name, value]) => ({
+      name,
+      value,
+      fill: colors[name] || '#64748b',
+    }))
+  }, [vehicles])
+
   const statCards = [
     {
       label: 'ጠቅላላ የተመዘገበ መኪና',
@@ -483,6 +537,76 @@ export default function FleetManagerClient() {
               <p className="text-2xl font-bold text-slate-900">የጥገና ጥያቄዎች</p>
               <p className="mt-0.5 text-xs font-medium text-slate-500">ከሹፌሮች ይቀበሉ</p>
             </button>
+          </div>
+
+          {/* ── Report Charts ──────────────────────────────── */}
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">የነዳጅ ጥያቄዎች ሪፖርት</h3>
+                  <p className="text-xs text-slate-500">Monthly fuel requests (last 6 months)</p>
+                </div>
+              </div>
+              <div className="h-64 p-4">
+                {monthlyFuelData.length === 0 ? (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    ምንም የነዳጅ ጥያቄ የለም
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyFuelData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip />
+                      <Bar dataKey="ነዳጅ" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Car className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">የመኪና ሁኔታ ሪፖርት</h3>
+                  <p className="text-xs text-slate-500">Vehicle status distribution</p>
+                </div>
+              </div>
+              <div className="h-64 p-4">
+                {vehicleStatusData.length === 0 ? (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    ምንም መኪና የለም
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={vehicleStatusData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={3}
+                      >
+                        {vehicleStatusData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
           </div>
 
           </>
