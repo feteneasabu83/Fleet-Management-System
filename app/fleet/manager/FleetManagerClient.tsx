@@ -515,6 +515,36 @@ export default function FleetManagerClient() {
             ))}
           </div>
 
+          {/* ── Quick Action Buttons ──────────────────────── */}
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => router.push('/fleet/manager/fuel-requests')}
+              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <Fuel className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">የነዳጅ ጥያቄዎች</p>
+                <p className="text-xs text-slate-500">{fuelRequests.length} ጥያቄዎች</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/fleet/maintenance-approval')}
+              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <Wrench className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">የጥገና ጥያቄዎች</p>
+                <p className="text-xs text-slate-500">ከሹፌሮች የሚመጡ ጥያቄዎችን ይቀበሉ</p>
+              </div>
+            </button>
+          </div>
+
           {/* ── Fuel Container ─────────────────────────────── */}
           <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">

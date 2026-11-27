@@ -88,7 +88,6 @@ export default function VerticalNavigation() {
       ? [
           { icon: Plus, label: "መኪና ይመዝግቡ", href: "/fleet/vehicleAdd", match: ["/fleet/vehicleAdd"] },
           { icon: UserPlus, label: "ሹ፜ር ይመድቡ", href: "/fleet/manager?tab=requests", match: ["/fleet/manager"] },
-          { icon: Fuel, label: "የነዳጅ ጥያቄዎች", href: "/fleet/manager/fuel-requests", match: ["/fleet/manager/fuel-requests"] },
           { icon: Fuel, label: "የነዳጅ እና የጥገና ወጪዎች", href: "/fleet/manager/costs", match: ["/fleet/manager/costs"] },
           { icon: BarChart3, label: "የወጪ ሪፖርት", href: "/fleet/manager/cost-report", match: ["/fleet/manager/cost-report"] },
           { icon: BarChart3, label: "ጠቅላላ ሪፖርት", href: "/fleet/manager/reports", match: ["/fleet/manager/reports"] },
