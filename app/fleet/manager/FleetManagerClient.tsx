@@ -480,7 +480,7 @@ export default function FleetManagerClient() {
 
   const statCards = [
     {
-      label: 'ጠቅላላ የተመዘገበ መኪና',
+      label: 'የመኪና መመደቢያ',
       value: stats.totalVehicles,
       icon: Car,
       chip: 'bg-blue-50 text-blue-600',
