@@ -8,10 +8,11 @@ import { Driver } from './types';
 interface DriversTabProps {
   drivers: Driver[];
   vehicles?: any[];
+  assignments?: any[];
   onDriversUpdate: (drivers: Driver[]) => void;
 }
 
-export default function DriversTab({ drivers, vehicles = [], onDriversUpdate }: DriversTabProps) {
+export default function DriversTab({ drivers, vehicles = [], assignments = [], onDriversUpdate }: DriversTabProps) {
   const router = useRouter();
   const { show: toast } = useToast();
   const [driversLoading, setDriversLoading] = useState(false);
@@ -34,12 +35,36 @@ export default function DriversTab({ drivers, vehicles = [], onDriversUpdate }: 
 
   const assignedDriverIds = useMemo(() => {
     const ids = new Set<string>();
-    (vehicles || []).forEach((v: any) => {
-      const uid = v?.user?.id;
-      if (uid) ids.add(String(uid));
+    const add = (id: any) => {
+      if (id) ids.add(String(id));
+    };
+
+    // 1) Direct vehicle -> user assignment
+    (vehicles || []).forEach((v: any) => add(v?.user?.id));
+
+    // 2) Active assignment requests (flat or nested shapes)
+    (assignments || []).forEach((req: any) => {
+      const status = String(req?.status || '').toUpperCase();
+      if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'REJECTED') return;
+
+      add(req?.driverId);
+      add(req?.driver?.id);
+      add(req?.assignedDriverId);
+      add(req?.requestor?.id);
+
+      const vehiclesArr = req?.vehicles;
+      if (Array.isArray(vehiclesArr)) {
+        vehiclesArr.forEach((v: any) => {
+          if (v?.completedAt || v?.endTime) return;
+          add(v?.driver?.id);
+          add(v?.driverId);
+          add(v?.userId);
+        });
+      }
     });
+
     return ids;
-  }, [vehicles]);
+  }, [vehicles, assignments]);
 
   const isDriverAssigned = (d: Driver) =>
     Boolean((d as any).assignedVehicle) || assignedDriverIds.has(String(d.id));
