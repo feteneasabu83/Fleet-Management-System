@@ -831,7 +831,7 @@ ${bodyInner}
             className="inline-flex items-center gap-1 rounded-lg bg-[#135a98] px-3 py-2 text-xs md:text-sm font-semibold text-white hover:bg-[#0f4e84] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="h-4 w-4" />
-            ሁሉንም ፈቃዶች አውርድ
+            ጠቅላላ የመስክ ሪፖርት
           </button>
         </div>
       </div>
