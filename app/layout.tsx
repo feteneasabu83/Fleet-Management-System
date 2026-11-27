@@ -2,7 +2,6 @@
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Playfair_Display } from "next/font/google"
 import "./globals.css"
 import Footer from "@/app/components/footer"
 import AppHeader from "@/app/components/app-header"
@@ -11,12 +10,6 @@ import { LocalizationProvider } from "@/app/hooks/use-localization"
 import { ToastProvider } from "@/app/components/toast-provider"
 import ToastView from "@/app/components/toast-view"
 import dynamic from "next/dynamic"
-
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["400", "700"],
-})
 
 const HEADER_HEIGHT = 84
 
@@ -40,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`font-sans min-h-screen flex flex-col ${GeistSans.variable} ${GeistMono.variable} ${playfairDisplay.variable}`}
+        className={`font-sans min-h-screen flex flex-col ${GeistSans.variable} ${GeistMono.variable}`}
         style={{ margin: 0, padding: 0 }}
       >
         <LocalizationProvider>
