@@ -14,6 +14,7 @@ interface AssignmentsTabProps {
 export default function AssignmentsTab({ requests: initialRequests, onAssignmentsUpdate }: AssignmentsTabProps) {
   const { show: toast } = useToast();
   const [assignPage, setAssignPage] = useState(1);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
   const [requests, setRequests] = useState<AssignmentRequest[]>(initialRequests || []);
   const [loading, setLoading] = useState(!initialRequests);
   const [totalItems, setTotalItems] = useState(0);
@@ -115,6 +116,34 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
 
   // Pagination over assigned vehicles
   const totalAssigned = vehicleRows.length;
+
+  // Unique drivers available for the report filter (derived from assigned vehicles)
+  const driverKeyOf = (vehicle: any) =>
+    String(
+      (vehicle as any)?.driver?.id ||
+        (vehicle as any)?.driverId ||
+        (vehicle as any)?.userId ||
+        ''
+    );
+
+  const driverOptions = (() => {
+    const map = new Map<string, string>();
+    vehicleRows.forEach(({ vehicle }) => {
+      const key = driverKeyOf(vehicle);
+      if (!key || map.has(key)) return;
+      const v: any = vehicle;
+      const name = v?.driver
+        ? `${v.driver.firstName || ''} ${v.driver.lastName || ''}`.trim()
+        : '';
+      map.set(key, name || key);
+    });
+    return Array.from(map.entries());
+  })();
+
+  // Rows used for the permit report download (all drivers or the selected one)
+  const reportRows = selectedDriverId
+    ? vehicleRows.filter(({ vehicle }) => driverKeyOf(vehicle) === selectedDriverId)
+    : vehicleRows;
   const totalPagesForVehicles = Math.max(1, Math.ceil(totalAssigned / ASSIGN_PAGE_SIZE));
   const pageItems = vehicleRows.slice(
     (assignPage - 1) * ASSIGN_PAGE_SIZE,
@@ -654,19 +683,21 @@ ${bodyInner}
   // assigned driver/vehicle (group report), each on its own page
   const downloadAllPermitsDoc = async () => {
     if (typeof window === 'undefined') return;
-    if (!vehicleRows.length) {
+    if (!reportRows.length) {
       toast({ title: 'ምንም የተመደበ መኪና የለም', variant: 'destructive' });
       return;
     }
     const ctx = await fetchPermitAssets();
-    const sections = vehicleRows.map(({ request, vehicle }) =>
+    const sections = reportRows.map(({ request, vehicle }) =>
       buildPermitBodyHtml(request, vehicle, ctx)
     );
     const inner = sections
       .map((s, i) => `${i > 0 ? '<div style="page-break-before:always"></div>' : ''}${s}`)
       .join('');
     const stamp = new Date().toISOString().slice(0, 10);
-    saveDocFile(wrapPermitHtml(inner), `travel_permits_all_drivers_${stamp}.doc`);
+    const selectedName = driverOptions.find(([id]) => id === selectedDriverId)?.[1];
+    const suffix = selectedName ? `_${selectedName.replace(/\s+/g, '_')}` : '_all_drivers';
+    saveDocFile(wrapPermitHtml(inner), `travel_permits${suffix}_${stamp}.doc`);
   };
 
   const handleExportPdf = () => {
@@ -754,7 +785,20 @@ ${bodyInner}
     <div className="bg-white rounded-lg shadow border">
       <div className="px-6 py-4 border-b flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">የመኪና መመደቢያ መዝገብ</h3>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
+          <select
+            value={selectedDriverId}
+            onChange={(e) => setSelectedDriverId(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-xs md:text-sm bg-white"
+            title="ሾፌር ይምረጡ — ሪፖርቱ ለዚያ ሾፌር ብቻ ይወርዳል"
+          >
+            <option value="">ሁሉም ሾፌሮች</option>
+            {driverOptions.map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+          </select>
           <select
             onChange={(e) => {
               const value = e.target.value;
@@ -776,7 +820,7 @@ ${bodyInner}
           <button
             type="button"
             onClick={downloadAllPermitsDoc}
-            disabled={!vehicleRows.length}
+            disabled={!reportRows.length}
             title="ለሁሉም ሾፌሮች የመዘዋወሪያ ፈቃድ ወረቀቶችን በአንድ Word ሰነድ ውስጥ አውርድ"
             className="inline-flex items-center gap-1 rounded-lg bg-[#135a98] px-3 py-2 text-xs md:text-sm font-semibold text-white hover:bg-[#0f4e84] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
