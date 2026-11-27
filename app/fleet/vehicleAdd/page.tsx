@@ -14,35 +14,35 @@ import {
   Tags,
 } from "lucide-react";
 
-const FUEL_TYPES = [
-  'Gasoline / Petrol',
-  'Diesel',
-  'Hybrid',
-  'Plug-in Hybrid (PHEV)',
-  'Electric (EV)',
-  'LPG',
-  'CNG',
-  'Hydrogen (FCEV)',
-  'Biofuel',
-  'Kerosene',
-  'Other',
-] as const;
+const FUEL_TYPES: Array<{ value: string; label: string }> = [
+  { value: 'Gasoline / Petrol', label: 'ቤንዚን' },
+  { value: 'Diesel', label: 'ዲዜል' },
+  { value: 'Hybrid', label: 'ሃይብሪድ' },
+  { value: 'Plug-in Hybrid (PHEV)', label: 'ፕላግ-ኢን ሃይብሪድ' },
+  { value: 'Electric (EV)', label: 'ኤሌክትሪክ' },
+  { value: 'LPG', label: 'ኤልፒጂ' },
+  { value: 'CNG', label: 'ሲኤንጂ' },
+  { value: 'Hydrogen (FCEV)', label: 'ሃይድሮጅን' },
+  { value: 'Biofuel', label: 'ባዮፊውኤል' },
+  { value: 'Kerosene', label: 'ኬሮሲን' },
+  { value: 'Other', label: 'ሌላ' },
+];
 
-const VEHICLE_TYPES = [
-  'Sedan',
-  'SUV',
-  'Pickup Truck',
-  'Truck / Lorry',
-  'Van / Minibus',
-  'Bus',
-  'Motorcycle',
-  'Bicycle',
-  'Tractor',
-  'Ambulance',
-  'Fire Truck',
-  'Police Vehicle',
-  'Other',
-] as const;
+const VEHICLE_TYPES: Array<{ value: string; label: string }> = [
+  { value: 'Sedan', label: 'ሴዳን' },
+  { value: 'SUV', label: 'ኤስዩቪ' },
+  { value: 'Pickup Truck', label: 'ፒካፕ ትሩክ' },
+  { value: 'Truck / Lorry', label: 'ትሩክ / ሎሪ' },
+  { value: 'Van / Minibus', label: 'ቫን / ሚኒባስ' },
+  { value: 'Bus', label: 'ባስ' },
+  { value: 'Motorcycle', label: 'ሞተር ሳይክል' },
+  { value: 'Bicycle', label: 'ሳይክል' },
+  { value: 'Tractor', label: 'ትራክተር' },
+  { value: 'Ambulance', label: 'አምቡላንስ' },
+  { value: 'Fire Truck', label: 'የእሳት አበሳ መኪና' },
+  { value: 'Police Vehicle', label: 'የፖሊስ መኪና' },
+  { value: 'Other', label: 'ሌላ' },
+];
 
 export default function VehicleAddSheet() {
   const router = useRouter();
@@ -255,9 +255,9 @@ export default function VehicleAddSheet() {
               <Car className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Register New Vehicle</h2>
+              <h2 className="text-xl font-bold">አዲስ መኪና ይመዝግቡ</h2>
               <p className="text-blue-100 text-sm opacity-90">
-                Add a new vehicle to your fleet
+                ወደ ተሽከርካሪዎ አዲስ መኪና ያክሉ
               </p>
             </div>
           </div>
@@ -276,7 +276,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Hash className="w-4 h-4 text-blue-600" />
-              License Plate
+              የመኪና ሰሌዳ ቁጥር
             </label>
             <div className="relative">
               <input
@@ -285,7 +285,7 @@ export default function VehicleAddSheet() {
                 value={form.plate}
                 onChange={handleChange}
                 required
-                placeholder="e.g. ABC-1234"
+                placeholder="ለምሳሌ ABC-1234"
                 className="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
               <BadgeInfo className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -297,26 +297,26 @@ export default function VehicleAddSheet() {
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                 <CarFront className="w-4 h-4 text-blue-600" />
-                Make
+                አምራች
               </label>
               <input
                 id="make"
                 name="make"
                 value={form.make}
                 onChange={handleChange}
-                placeholder="e.g. Toyota"
+                placeholder="ለምሳሌ ቶዮታ"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Model</label>
+              <label className="text-sm font-medium text-gray-700">ሞዴል</label>
               <input
                 id="model"
                 name="model"
                 value={form.model}
                 onChange={handleChange}
-                placeholder="e.g. Corolla"
+                placeholder="ለምሳሌ ኮሮላ"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
@@ -326,7 +326,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2 md:max-w-xs">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Calendar className="w-4 h-4 text-blue-600" />
-              Year
+              አመት
             </label>
             <div className="relative">
               <input
@@ -335,7 +335,7 @@ export default function VehicleAddSheet() {
                 type="number"
                 value={form.year}
                 onChange={handleChange}
-                placeholder="e.g. 2024"
+                placeholder="ለምሳሌ 2024"
                 min="1900"
                 max="2030"
                 className="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white appearance-none"
@@ -348,21 +348,21 @@ export default function VehicleAddSheet() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Country of Origin
+                የመነጭ አገር
               </label>
               <input
                 id="countryOfOrigin"
                 name="countryOfOrigin"
                 value={form.countryOfOrigin}
                 onChange={handleChange}
-                placeholder="e.g. Japan"
+                placeholder="ለምሳሌ ጃፓን"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Seating Capacity
+                የተቀማጭ ቦታ ብዛት
               </label>
               <input
                 id="seatingCapacity"
@@ -370,7 +370,7 @@ export default function VehicleAddSheet() {
                 type="number"
                 value={form.seatingCapacity}
                 onChange={handleChange}
-                placeholder="e.g. 5"
+                placeholder="ለምሳሌ 5"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
@@ -387,14 +387,14 @@ export default function VehicleAddSheet() {
                 type="number"
                 value={form.kmPerLiter}
                 onChange={handleChange}
-                placeholder="e.g. 15"
+                placeholder="ለምሳሌ 15"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Vehicle Type Name
+                የመኪና አይነት
               </label>
               <select
                 id="vehicleTypeName"
@@ -403,9 +403,9 @@ export default function VehicleAddSheet() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
-                <option value="">Select type...</option>
+                <option value="">አይነት ይምረጡ...</option>
                 {VEHICLE_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
             </div>
@@ -414,28 +414,28 @@ export default function VehicleAddSheet() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Chassis Number
+                የቺሲ ቁጥር
               </label>
               <input
                 id="chassisNumber"
                 name="chassisNumber"
                 value={form.chassisNumber}
                 onChange={handleChange}
-                placeholder="e.g. VIN123456"
+                placeholder="ለምሳሌ VIN123456"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Engine Number
+                የሞተር ቁጥር
               </label>
               <input
                 id="engineNumber"
                 name="engineNumber"
                 value={form.engineNumber}
                 onChange={handleChange}
-                placeholder="e.g. ENG98765"
+                placeholder="ለምሳሌ ENG98765"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
@@ -444,7 +444,7 @@ export default function VehicleAddSheet() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Fuel Type
+                የነዳጅ አይነት
               </label>
               <select
                 id="fuelType"
@@ -453,16 +453,16 @@ export default function VehicleAddSheet() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
-                <option value="">Select fuel type...</option>
+                <option value="">የነዳጅ አይነት ይምረጡ...</option>
                 {FUEL_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Cylinder Count
+                የሲሊንደር ብዛት
               </label>
               <input
                 id="cylinderCount"
@@ -470,7 +470,7 @@ export default function VehicleAddSheet() {
                 type="number"
                 value={form.cylinderCount}
                 onChange={handleChange}
-                placeholder="e.g. 4"
+                placeholder="ለምሳሌ 4"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50/50 hover:bg-white"
               />
             </div>
@@ -480,7 +480,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <CarFront className="w-4 h-4 text-blue-600" />
-              Assigned Driver <span className="text-gray-400 font-normal">(optional)</span>
+              የተመደበ ሾፌር <span className="text-gray-400 font-normal">(አማራጭ)</span>
             </label>
             <select
               id="userId"
@@ -489,7 +489,7 @@ export default function VehicleAddSheet() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
-              <option value="">No driver assigned</option>
+              <option value="">ሾፌር አልተመደበም</option>
               {drivers.map((d) => (
                 <option key={d.id} value={d.id}>
                   {[d.firstName, d.lastName].filter(Boolean).join(' ') || d.email || d.id}
@@ -502,7 +502,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Tags className="w-4 h-4 text-blue-600" />
-              Type
+              አይነት
             </label>
             <select
               id="type"
@@ -511,8 +511,8 @@ export default function VehicleAddSheet() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 hover:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
-              <option value="NEW">New</option>
-              <option value="USED">Used</option>
+              <option value="NEW">አዲስ</option>
+              <option value="USED">ጥቅም ላይ የዋለ</option>
             </select>
           </div>
 
@@ -534,7 +534,7 @@ export default function VehicleAddSheet() {
               disabled={loading}
               className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 disabled:opacity-50 transition-all duration-200"
             >
-              Cancel
+              ሰርዝ
             </button>
             <button
               type="submit"
@@ -544,12 +544,12 @@ export default function VehicleAddSheet() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
+                  በማስቀመጥ ላይ...
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Vehicle
+                  መኪና አስቀምጥ
                 </>
               )}
             </button>
@@ -559,7 +559,7 @@ export default function VehicleAddSheet() {
         {/* Footer Tips */}
         <div className="px-6 pb-4">
           <div className="text-xs text-gray-500 text-center">
-            <p>Vehicle will be added to your fleet manager dashboard</p>
+            <p>መኪናው ወደ የተሽከርካሪ ዳሽቦርድዎ ይጨመራል</p>
           </div>
         </div>
       </div>
