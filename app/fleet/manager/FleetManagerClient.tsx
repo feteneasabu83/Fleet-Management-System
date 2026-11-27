@@ -45,6 +45,7 @@ export default function FleetManagerClient() {
   const [serviceRegistrations, setServiceRegistrations] = useState<any[]>([])
   const [fuelRequests, setFuelRequests] = useState<any[]>([])
   const [fleetCosts, setFleetCosts] = useState<any[]>([])
+  const [showVehiclesModal, setShowVehiclesModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
@@ -590,7 +591,7 @@ export default function FleetManagerClient() {
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <button
               type="button"
-              onClick={() => goToTab('vehicles', 'vehicles')}
+              onClick={() => setShowVehiclesModal(true)}
               className="rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
             >
               <p className="text-xs font-medium text-slate-500">ጠቅላላ መኪናዎች</p>
@@ -718,6 +719,89 @@ export default function FleetManagerClient() {
           )}
 
           {activeTab === 'serviced' && <ServicedTab />}
+          </div>
+        )}
+
+        {/* ── Registered Vehicles Modal ───────────────────── */}
+        {showVehiclesModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            onClick={() => setShowVehiclesModal(false)}
+          >
+            <div
+              className="flex max-h-[90vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">የተመዘገቡ መኪናዎች</h3>
+                  <p className="text-xs text-slate-500">{vehicles.length} መኪናዎች ተመዝግበዋል</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowVehiclesModal(false)}
+                  className="rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-100"
+                >
+                  ✕ ዝጋ
+                </button>
+              </div>
+              <div className="overflow-auto p-4">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2">#</th>
+                      <th className="px-3 py-2">የመኪና ቁጥር</th>
+                      <th className="px-3 py-2">ማርክ / ሞዴል</th>
+                      <th className="px-3 py-2">አመት</th>
+                      <th className="px-3 py-2">ዓይነት</th>
+                      <th className="px-3 py-2">ነዳጅ አይነት</th>
+                      <th className="px-3 py-2">ሁኔታ</th>
+                      <th className="px-3 py-2">ተመድቦ ሹፌር</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {vehicles.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-3 py-8 text-center text-slate-400">
+                          ምንም መኪና አልተመዘገበም
+                        </td>
+                      </tr>
+                    ) : (
+                      vehicles.map((v: any, i: number) => (
+                        <tr key={v.id} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 text-slate-400">{i + 1}</td>
+                          <td className="px-3 py-2 font-mono font-semibold text-slate-900">
+                            {v.plate || v.licensePlate || v.id}
+                          </td>
+                          <td className="px-3 py-2">
+                            {[v.make, v.model].filter(Boolean).join(' ') || '—'}
+                          </td>
+                          <td className="px-3 py-2">{v.year || '—'}</td>
+                          <td className="px-3 py-2">{v.vehicleTypeName || v.vehicleType || '—'}</td>
+                          <td className="px-3 py-2">{v.fuelType || '—'}</td>
+                          <td className="px-3 py-2">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                String(v.status || '').toUpperCase() === 'AVAILABLE'
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : String(v.status || '').toUpperCase() === 'ASSIGNED' || v.user
+                                    ? 'bg-blue-50 text-blue-700'
+                                    : 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {v.user ? 'ተመድቧል' : v.status || 'ዝግጁ'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2">
+                            {v.user ? `${v.user.firstName || ''} ${v.user.lastName || ''}`.trim() || '—' : '—'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </div>
