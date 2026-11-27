@@ -434,11 +434,8 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
 
-  // Download a Word (.doc) travel permit form for a single assigned vehicle row
-  const downloadPermitDoc = async (request: AssignmentRequest, vehicle: any) => {
-    if (typeof window === 'undefined') return;
-
-    // Embed the FCSC logo as base64 so the .doc is self-contained
+  // Shared assets for travel permit .doc generation (logo + all trip history)
+  const fetchPermitAssets = async () => {
     let logoDataUri = '';
     try {
       const logoRes = await fetch('/gallery/FCSC.jpg');
@@ -453,43 +450,55 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
       logoDataUri = '';
     }
 
-    // Fetch the assigned driver's completed trip history (same TripHistory
+    // Fetch all drivers' completed trip history once (same TripHistory
     // source that powers the driver "የመስክ ታሪክ (Completed Trips)" table)
+    let allTripHistory: any[] = [];
+    try {
+      const token = localStorage.getItem('accessToken') || '';
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const histRes = await fetch(`${apiBase}/api/fleet/trip-history/manager/all`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const histJson = await histRes.json().catch(() => ({}));
+      allTripHistory = Array.isArray(histJson?.data)
+        ? histJson.data
+        : Array.isArray(histJson)
+          ? histJson
+          : [];
+    } catch {
+      allTripHistory = [];
+    }
+
+    const authUser = getAuthUser();
+    const managerName = `${authUser?.firstName || ''} ${authUser?.lastName || ''}`.trim();
+
+    return { logoDataUri, allTripHistory, managerName };
+  };
+
+  // Build the inner <body> HTML of one travel permit for a request+vehicle row
+  const buildPermitBodyHtml = (
+    request: AssignmentRequest,
+    vehicle: any,
+    ctx: { logoDataUri: string; allTripHistory: any[]; managerName: string }
+  ) => {
+    const { logoDataUri, allTripHistory, managerName } = ctx;
+
     const driverId =
       (vehicle as any)?.driver?.id ||
       (vehicle as any)?.driverId ||
       (vehicle as any)?.userId ||
       null;
 
-    let tripHistory: any[] = [];
-    if (driverId) {
-      try {
-        const token = localStorage.getItem('accessToken') || '';
-        const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
-        const histRes = await fetch(`${apiBase}/api/fleet/trip-history/manager/all`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const histJson = await histRes.json().catch(() => ({}));
-        const items: any[] = Array.isArray(histJson?.data)
-          ? histJson.data
-          : Array.isArray(histJson)
-            ? histJson
-            : [];
-        tripHistory = items
+    const tripHistory = driverId
+      ? allTripHistory
           .filter((h: any) => h.driverId === driverId)
           .sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-          .slice(0, 8);
-      } catch {
-        tripHistory = [];
-      }
-    }
+          .slice(0, 8)
+      : [];
 
-    const { driverName, driverPhone } = getDriverInfo(request, vehicle);
+    const { driverName } = getDriverInfo(request, vehicle);
     const { plate } = getVehicleInfo(request, vehicle);
     const requesterName = `${request.requestor.firstName || ''} ${request.requestor.middleName ? request.requestor.middleName + ' ' : ''}${request.requestor.lastName || ''}`.trim();
-
-    const authUser = getAuthUser();
-    const managerName = `${authUser?.firstName || ''} ${authUser?.lastName || ''}`.trim();
 
     const fromLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
     const toLabel = request.toDate ? formatDate(request.toDate) : fromLabel;
@@ -563,23 +572,7 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
   ${tripRowsHtml}
 </table>`;
 
-    const html = `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
-<head>
-<meta charset="UTF-8">
-<title>የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</title>
-<style>
-  body { font-family: "Ebrima", "Nyala", "Times New Roman", Arial, serif; font-size: 11pt; }
-  .title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 14px; }
-  p { margin: 6px 0; }
-  .lbl { font-weight: bold; }
-  .log { font-size: 9pt; }
-  .log th { border-bottom: 1px solid #000; padding: 2px 4px; text-align: left; }
-  .log td { padding: 2px 4px; }
-</style>
-</head>
-<body>
-
+    return `
 ${logoDataUri ? `<p style="text-align:center;margin-bottom:6px;"><img src="${logoDataUri}" alt="FCSC" style="height:12px;" /></p>` : ''}
 
 <p class="title">የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</p>
@@ -611,20 +604,69 @@ ${tripHistoryTable}
 <p><b>1.</b> ይህ ቅጽ በአንድ ቅጅ ከተሰራ በኋላ ከተሽከርካሪው ጋር እንዲዘዋወር ለሾፌሩ ይሰጥና አገልግሎት ሲያበቃ ለሚመለከተው ተቆጣጣሪ ስራ ክፍል ያሰረክባል፡፤<br>
 <b>2.</b> ይህ ቅጽ ከሥራ ሰዓት ወጭ እና በበዓላት ቃናት ለሚሰት አገልግሎት በተጨማሪነት ያገለግላል፡፡<br>
 <b>3.</b> ይህንን በተመለከተ የመሥራያ ቤ/ቱ የሚመለከተው ተቆጣጣሪ ሥራ ክፍል ሃላፊነት አለበት</p>
+`;
+  };
 
+  const wrapPermitHtml = (bodyInner: string) => `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="UTF-8">
+<title>የመንግስት ተሽከርካሪ አገልግሎት መጠየቂያና የመዘዋወሪያ ፈቃድ መስጫ</title>
+<style>
+  body { font-family: "Ebrima", "Nyala", "Times New Roman", Arial, serif; font-size: 11pt; }
+  .title { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 14px; }
+  p { margin: 6px 0; }
+  .lbl { font-weight: bold; }
+  .log { font-size: 9pt; }
+  .log th { border-bottom: 1px solid #000; padding: 2px 4px; text-align: left; }
+  .log td { padding: 2px 4px; }
+</style>
+</head>
+<body>
+${bodyInner}
 </body>
 </html>`;
 
+  const saveDocFile = (html: string, filename: string) => {
     const blob = new Blob(['﻿' + html], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const safePlate = String(plate || 'vehicle').replace(/[^a-zA-Z0-9_-]/g, '_');
-    link.setAttribute('download', `travel_permit_${safePlate}_${tripDateLabel.replace(/\//g, '-')}.doc`);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  // Download a Word (.doc) travel permit form for a single assigned vehicle row
+  const downloadPermitDoc = async (request: AssignmentRequest, vehicle: any) => {
+    if (typeof window === 'undefined') return;
+    const ctx = await fetchPermitAssets();
+    const body = buildPermitBodyHtml(request, vehicle, ctx);
+    const { plate } = getVehicleInfo(request, vehicle);
+    const tripDateLabel = request.fromDate ? formatDate(request.fromDate) : formatDate(request.date);
+    const safePlate = String(plate || 'vehicle').replace(/[^a-zA-Z0-9_-]/g, '_');
+    saveDocFile(wrapPermitHtml(body), `travel_permit_${safePlate}_${tripDateLabel.replace(/\//g, '-')}.doc`);
+  };
+
+  // Download one combined Word (.doc) containing a travel permit for every
+  // assigned driver/vehicle (group report), each on its own page
+  const downloadAllPermitsDoc = async () => {
+    if (typeof window === 'undefined') return;
+    if (!vehicleRows.length) {
+      toast({ title: 'ምንም የተመደበ መኪና የለም', variant: 'destructive' });
+      return;
+    }
+    const ctx = await fetchPermitAssets();
+    const sections = vehicleRows.map(({ request, vehicle }) =>
+      buildPermitBodyHtml(request, vehicle, ctx)
+    );
+    const inner = sections
+      .map((s, i) => `${i > 0 ? '<div style="page-break-before:always"></div>' : ''}${s}`)
+      .join('');
+    const stamp = new Date().toISOString().slice(0, 10);
+    saveDocFile(wrapPermitHtml(inner), `travel_permits_all_drivers_${stamp}.doc`);
   };
 
   const handleExportPdf = () => {
@@ -740,6 +782,16 @@ ${tripHistoryTable}
             <option value="pdf">PDF</option>
             <option value="excel">Excel</option>
           </select>
+          <button
+            type="button"
+            onClick={downloadAllPermitsDoc}
+            disabled={!vehicleRows.length}
+            title="ለሁሉም ሾፌሮች የመዘዋወሪያ ፈቃድ ወረቀቶችን በአንድ Word ሰነድ ውስጥ አውርድ"
+            className="inline-flex items-center gap-1 rounded-lg bg-[#135a98] px-3 py-2 text-xs md:text-sm font-semibold text-white hover:bg-[#0f4e84] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="h-4 w-4" />
+            ሁሉንም ፈቃዶች አውርድ
+          </button>
         </div>
       </div>
       <div className="p-6 overflow-x-auto">
