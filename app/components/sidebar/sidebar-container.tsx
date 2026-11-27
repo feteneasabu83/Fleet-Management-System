@@ -8,7 +8,7 @@ import { Menu, X } from "lucide-react";
 const SIDEBAR_STYLE: React.CSSProperties = {
   flexShrink: 0,
   borderRight: "1px solid rgba(148, 163, 184, 0.12)",
-  background: "linear-gradient(180deg, #0f1a10 0%, #3a2f16 55%, #050505 100%)",
+  background: "linear-gradient(180deg, #ffffff 0%, #14532d 25%, #3a2f16 50%, #eab308 75%, #ec4899 100%)",
   boxShadow: "4px 0 24px rgba(2, 6, 23, 0.35)",
 };
 
