@@ -144,8 +144,11 @@ export default function AssignmentsTab({ requests: initialRequests, onAssignment
   const reportRows = selectedDriverId
     ? vehicleRows.filter(({ vehicle }) => driverKeyOf(vehicle) === selectedDriverId)
     : vehicleRows;
-  const totalPagesForVehicles = Math.max(1, Math.ceil(totalAssigned / ASSIGN_PAGE_SIZE));
-  const pageItems = vehicleRows.slice(
+
+  // Rows shown in the table (filtered by selected driver)
+  const displayRows = reportRows;
+  const totalPagesForVehicles = Math.max(1, Math.ceil(displayRows.length / ASSIGN_PAGE_SIZE));
+  const pageItems = displayRows.slice(
     (assignPage - 1) * ASSIGN_PAGE_SIZE,
     (assignPage - 1) * ASSIGN_PAGE_SIZE + ASSIGN_PAGE_SIZE
   );
@@ -788,7 +791,10 @@ ${bodyInner}
         <div className="flex gap-2 items-center flex-wrap">
           <select
             value={selectedDriverId}
-            onChange={(e) => setSelectedDriverId(e.target.value)}
+            onChange={(e) => {
+              setSelectedDriverId(e.target.value);
+              setAssignPage(1);
+            }}
             className="px-3 py-2 border border-gray-300 rounded-md text-xs md:text-sm bg-white"
             title="ሾፌር ይምረጡ — ሪፖርቱ ለዚያ ሾፌር ብቻ ይወርዳል"
           >
@@ -905,10 +911,10 @@ ${bodyInner}
         <div className="mt-4 flex items-center justify-between text-xs md:text-sm">
           <div>
             ከ{' '}
-            {totalAssigned === 0 ? 0 : (assignPage - 1) * ASSIGN_PAGE_SIZE + 1}{' '}
+            {displayRows.length === 0 ? 0 : (assignPage - 1) * ASSIGN_PAGE_SIZE + 1}{' '}
             እስከ{' '}
-            {Math.min(assignPage * ASSIGN_PAGE_SIZE, totalAssigned)}{' '}
-            ድረስ ከ ጠቅላላ {totalAssigned} የተመደቡ መኪኖች
+            {Math.min(assignPage * ASSIGN_PAGE_SIZE, displayRows.length)}{' '}
+            ድረስ ከ ጠቅላላ {displayRows.length} የተመደቡ መኪኖች
           </div>
           <div className="flex items-center gap-2">
             <button
