@@ -498,7 +498,7 @@ export default function FleetManagerClient() {
         {activeTab === 'overview' ? (
           /* ── Dashboard: stat buttons + fuel container ──────── */
           <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {statCards.map((card) => (
               <button
                 key={card.label}
@@ -513,10 +513,7 @@ export default function FleetManagerClient() {
                 <p className="mt-0.5 text-xs font-medium text-slate-500">{card.label}</p>
               </button>
             ))}
-          </div>
 
-          {/* ── Quick Action Buttons ──────────────────────── */}
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <button
               type="button"
               onClick={() => router.push('/fleet/manager/fuel-requests')}
