@@ -1,5 +1,6 @@
 "use client"
 import React from "react"
+import { Car } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { signOut, decodeJwt } from "@/app/lib/auth"
@@ -184,9 +185,11 @@ export default function AppHeader() {
         flexWrap: 'wrap',
         rowGap: 8,
         minHeight: 64,
+        position: 'relative',
       }}>
-        {/* Left: App title */}
-        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+        {/* Center: App title */}
+        <span style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Car size={20} />
           Fleet Management System
         </span>
 
