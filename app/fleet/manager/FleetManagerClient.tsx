@@ -488,7 +488,7 @@ export default function FleetManagerClient() {
       tabParam: 'vehicles',
     },
     {
-      label: 'የመኪና ጥያቄዎች',
+      label: 'የመኪና ጥያቄዎችና መስክ መመደቢያ',
       value: requests.length,
       icon: FileText,
       chip: 'bg-emerald-50 text-emerald-600',
