@@ -1,8 +1,8 @@
 "use client"
 import React from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { Car, Home, Search } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Car } from "lucide-react"
 import Image from "next/image"
 import { signOut, decodeJwt } from "@/app/lib/auth"
 import { FleetInboxToggle } from "@/app/components/fleet-inbox"
@@ -10,7 +10,6 @@ import ToastHost from "@/app/components/toast"
 
 
 export default function AppHeader() {
-  const router = useRouter()
   const pathname = usePathname()
   // Minimal header (registration only). Hide header on login, forgot-password, and about pages.
   const isLogin = pathname === "/login" || pathname?.startsWith("/login/")
@@ -198,24 +197,11 @@ export default function AppHeader() {
           Fleet
         </Link>
 
-        {/* Center: Search */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.7)' }} />
-            <input
-              type="text"
-              placeholder="Search fleet, drivers, vehicles…"
-              onKeyDown={(e) => { if (e.key === 'Enter') router.push('/fleet/manager?tab=reports') }}
-              style={{ width: '100%', padding: '9px 14px 9px 36px', borderRadius: 999, border: 'none', outline: 'none', fontSize: 14, background: 'rgba(255,255,255,0.92)', color: '#111827', boxSizing: 'border-box' }}
-            />
-          </div>
-        </div>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
 
-        {/* Right: Home + Fleet Inbox + User */}
+        {/* Right: Fleet Inbox + User */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', flexShrink: 0 }}>
-          <Link href="/fleet/manager" title="Home" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, color: '#ffffff', textDecoration: 'none' }}>
-            <Home size={20} />
-          </Link>
           <FleetInboxToggle />
           <button
             onClick={() => setMenuOpen((v: boolean) => !v)}
