@@ -364,33 +364,6 @@ export default function FleetManagerClient() {
     loadData()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading fleet data...</div>
-        </div>
-      </div>
-    )
-  }
-
-  if (fetchError) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-          <p className="font-bold">Error</p>
-          <p>{fetchError}</p>
-          <button
-            onClick={fetchVehicles}
-            className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   const monthlyFuelData = useMemo(() => {
     const months: Record<string, number> = {}
     fuelRequests.forEach((r: any) => {
@@ -430,6 +403,33 @@ export default function FleetManagerClient() {
       fill: colors[name] || '#64748b',
     }))
   }, [vehicles])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading fleet data...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+          <p className="font-bold">Error</p>
+          <p>{fetchError}</p>
+          <button
+            onClick={fetchVehicles}
+            className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const statCards = [
     {
