@@ -588,10 +588,14 @@ export default function FleetManagerClient() {
 
           {/* ── Cost Analysis ──────────────────────────────── */}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <button
+              type="button"
+              onClick={() => goToTab('vehicles', 'vehicles')}
+              className="rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+            >
               <p className="text-xs font-medium text-slate-500">ጠቅላላ መኪናዎች</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{stats.totalVehicles}</p>
-            </div>
+            </button>
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-xs font-medium text-slate-500">ጠቅላላ ሹፌሮች</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{drivers.length}</p>
