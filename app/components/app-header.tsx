@@ -174,7 +174,7 @@ export default function AppHeader() {
   }, [])
 
   return (
-    <header style={{ width: "100%", background: "linear-gradient(90deg, #ffffff 0%, #14532d 25%, #3a2f16 50%, #eab308 75%, #ec4899 100%)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+    <header style={{ width: "100%", background: "linear-gradient(90deg, #ffffff 0%, #14532d 33%, #3a2f16 66%, #eab308 100%)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
       <div style={{
         display: "flex",
         alignItems: "center",
