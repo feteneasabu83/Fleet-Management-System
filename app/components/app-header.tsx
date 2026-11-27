@@ -61,6 +61,7 @@ export default function AppHeader() {
   const [isTeamLead, setIsTeamLead] = React.useState(false)
   const [isEmployee, setIsEmployee] = React.useState(false)
   const [roleLabel, setRoleLabel] = React.useState<string>("User")
+  const [logoHref, setLogoHref] = React.useState<string>("/fleet/request")
   const [pwFormOpen, setPwFormOpen] = React.useState(false)
   const [pwCurrent, setPwCurrent] = React.useState("")
   const [pwNew, setPwNew] = React.useState("")
@@ -137,6 +138,8 @@ export default function AppHeader() {
         const fleetManager = upperRoles.includes('FLEET_MANAGER') || upperRoles.includes('FLEET MANAGER') || upperRoles.includes('FLEET-MANAGER')
         const endUser = upperRoles.includes('END_USER') || upperRoles.includes('END USER') || upperRoles.includes('END-USER')
 
+        setLogoHref(isAdm || hrSupervisor || fleetManager ? "/fleet/manager" : "/fleet/request")
+
         let label = 'User'
         if (isAdm) label = 'System Admin'
         else if (hrSupervisor) label = 'HR supervisor'
@@ -188,7 +191,7 @@ export default function AppHeader() {
       }}>
         {/* Left: Logo */}
         <Link
-          href="/fleet/manager"
+          href={logoHref}
           style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.15)' }}>

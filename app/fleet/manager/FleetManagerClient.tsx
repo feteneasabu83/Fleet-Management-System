@@ -13,6 +13,7 @@ import {
   Fuel,
 } from 'lucide-react'
 import { useToast } from '@/app/components/toast-provider'
+import { getCurrentUserRoles } from '@/app/lib/auth'
 import { Vehicle, Driver, Assignment, FleetRequestDTO, AssignmentRequest } from '@/app/components/fleet-manager/types'
 import VehiclesTab from '@/app/components/fleet-manager/VehiclesTab'
 import DriversTab from '@/app/components/fleet-manager/DriversTab'
@@ -37,6 +38,22 @@ export default function FleetManagerClient() {
     'overview' | 'vehicles' | 'drivers' | 'assignments' | 'requests' | 'serviced'
   >('overview')
   const { show: toast } = useToast()
+
+  // Restrict page to fleet staff only (fleet manager, admin, HR supervisor)
+  useEffect(() => {
+    const roles = getCurrentUserRoles().map((r) => r.toUpperCase())
+    const allowed =
+      roles.some((r) => /(ADMIN|SYSTEM[_-]?ADMIN|SUPERUSER)/.test(r)) ||
+      roles.includes('FLEET_MANAGER') ||
+      roles.includes('FLEET MANAGER') ||
+      roles.includes('FLEET-MANAGER') ||
+      roles.includes('HR_SUPERVISOR') ||
+      roles.includes('HR SUPERVISOR') ||
+      roles.includes('HR-SUPERVISOR')
+    if (!allowed) {
+      router.replace('/fleet/request')
+    }
+  }, [router])
 
   // Initialize active tab from URL ?tab=...
   useEffect(() => {
