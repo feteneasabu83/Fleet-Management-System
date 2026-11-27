@@ -2001,6 +2001,9 @@ async assignDriver(id: number, driverId: string, vehicleId: string) {
       description?: string;
       actionTakeByuser?: string;
       status?: MaintenanceStatus;
+      remainingFuelKm?: number;
+      fuelLevelStatus?: string;
+      severity?: string;
     }
   ) {
     // Find the vehicle assigned to this user
@@ -2029,6 +2032,12 @@ async assignDriver(id: number, driverId: string, vehicleId: string) {
         status: body.status ?? MaintenanceStatus.PENDING,
         actionByUserId,
         description: body.description ?? null,
+        remainingFuelKm:
+          body.remainingFuelKm != null && !isNaN(Number(body.remainingFuelKm))
+            ? Number(body.remainingFuelKm)
+            : null,
+        fuelLevelStatus: body.fuelLevelStatus ?? null,
+        severity: body.severity ?? null,
       },
     });
   }

@@ -1295,6 +1295,9 @@ model MaintenanceSchedule {
   actionByUserId          String?           @db.Uuid
   description             String?
   maintenanceScheduleTime DateTime?
+  remainingFuelKm         Float?
+  fuelLevelStatus         String?
+  severity                String?
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
 

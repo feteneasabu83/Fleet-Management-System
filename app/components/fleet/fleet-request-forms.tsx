@@ -12,6 +12,25 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { listVehicles, createFleetRequest, listFleetRequests, type VehicleDTO, type FleetRequestDTO } from "@/app/lib/fleet-api"
 import { getCurrentUserPrimaryRole, getCurrentUserEmail, getCurrentUserId } from "@/app/lib/auth"
 
+const ACCIDENT_TYPE_LABELS: Record<string, string> = {
+  '1': 'ቅድመ ጥገና',
+  '2': 'ከሞተር ጋር የተገናኙ ችግሮች',
+  '3': 'የብሬክ ሲስተም ጉዳዮች',
+  '4': 'የኤሌክትሪክ እና የመብራት ችግሮች',
+  '5': 'የጎማና ተዛማጅ ችግሮች',
+  '6': 'የደህንነት እና ቁጥጥር ስርዓት ጉዳዮች',
+  '7': 'የሰውነት, ውጫዊ እና ውስጣዊ ችግሮች',
+  '8': 'ማቀዝቀዥ፣ ማሞቂያ እና የ AC ችግሮች',
+  '9': 'ከነዳጅ ጋር የተገናኙ ችግሮች',
+  '10': 'አደጋ',
+}
+
+const FUEL_LEVEL_LABELS: Record<string, string> = {
+  FULL: 'ሙሉ',
+  MEDIUM: 'መካከለኛ',
+  LOW_EMPTY: 'ዝቅተኛ / ባዶ',
+}
+
 function VehicleSelect({ value, onChange, vehicles }: { value?: string; onChange: (v: string) => void; vehicles: VehicleDTO[] }) {
   const hasSingleVehicle = vehicles.length === 1
 
@@ -1295,10 +1314,16 @@ export default function FleetRequestForms({ initialTab = 'issue', driverId, driv
                             {req.remainingFuelKm ?? req.remainingFuel ?? req.currentOdometer ?? '-'}
                           </td>
                           <td className="border px-3 py-2 align-top">
-                            {req.accidentType || req.typesOfAccident || '-'}
+                            {req.accidentType ||
+                              req.typesOfAccident ||
+                              ACCIDENT_TYPE_LABELS[String(req.severity)] ||
+                              req.severity ||
+                              '-'}
                           </td>
                           <td className="border px-3 py-2 align-top">
-                            {req.fuelLevelStatus || '-'}
+                            {req.fuelLevelStatus
+                              ? FUEL_LEVEL_LABELS[req.fuelLevelStatus] || req.fuelLevelStatus
+                              : '-'}
                           </td>
                         </tr>
                       )

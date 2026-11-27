@@ -591,6 +591,9 @@ async getFieldManagementInfo(@Req() req: any) {
       description?: string;
       actionTakeByuser?:string;
       status?: MaintenanceStatus;
+      remainingFuelKm?: number;
+      fuelLevelStatus?: string;
+      severity?: string;
     },
   ) {
     const userId = req?.user?.userId as string;
