@@ -880,7 +880,15 @@ async getFleetRequestsWithDetails() {
 
 @ApiOperation({ summary: 'Get flattened fleet request summary with requestor, vehicle and driver' })
 @Get('requests/summary')
-async listFleetRequestsSummary() {
-  return this.fleet.listFleetRequestsSummary();
+async listFleetRequestsSummary(
+  @Query('page') page?: string,
+  @Query('pageSize') pageSize?: string,
+) {
+  const p = page ? parseInt(page, 10) : 1;
+  const ps = pageSize ? parseInt(pageSize, 10) : 10;
+  return this.fleet.listFleetRequestsSummary(
+    Number.isFinite(p) ? p : 1,
+    Number.isFinite(ps) ? ps : 10,
+  );
 }
 }

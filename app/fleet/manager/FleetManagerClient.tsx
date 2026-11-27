@@ -347,17 +347,29 @@ export default function FleetManagerClient() {
     try {
       const token = localStorage.getItem('accessToken') || ''
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-      const res = await fetch(
-        `${apiBase}/api/fleet/requests/summary`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        },
-      )
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-      const data = await res.json()
-      const arr = (data?.data || data?.items || []) as any
-      console.log("========================",arr)
-      const list: AssignmentRequest[] = Array.isArray(arr) ? arr : []
+      const pageSize = 100
+      const allRows: any[] = []
+      let page = 1
+      let total = Infinity
+      while (allRows.length < total) {
+        const res = await fetch(
+          `${apiBase}/api/fleet/requests/summary?page=${page}&pageSize=${pageSize}`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          },
+        )
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+        const data = await res.json()
+        const arr = (data?.data || data?.items || []) as any
+        const rows = Array.isArray(arr) ? arr : []
+        allRows.push(...rows)
+        total = Number(data?.total ?? allRows.length)
+        if (rows.length < pageSize) break
+        page += 1
+        if (page > 50) break
+      }
+      console.log("========================",allRows)
+      const list: AssignmentRequest[] = allRows
       setAssignmentRequests((prev) => {
         const map = new Map<string | number, AssignmentRequest>()
 

@@ -45,12 +45,28 @@ export default function DriversTab({ drivers, vehicles = [], assignments = [], o
     // 2) Active assignment requests (flat or nested shapes)
     (assignments || []).forEach((req: any) => {
       const status = String(req?.status || '').toUpperCase();
-      if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'REJECTED') return;
+      const inactiveStatuses = [
+        'COMPLETED', 'COMPLETE', 'CANCELLED', 'CANCELED',
+        'REJECTED', 'RETURNED', 'FINISHED', 'CLOSED', 'DONE',
+      ];
+      if (inactiveStatuses.includes(status)) return;
 
+      const activeStatuses = [
+        'ASSIGNED', 'ACTIVE', 'IN_PROGRESS', 'ONGOING',
+        'OUTSTANDING', 'FIELD', 'EN_ROUTE', 'APPROVED',
+      ];
+      const isActiveAssignment = activeStatuses.includes(status);
+
+      // driverId means a vehicle is actually assigned to this driver
       add(req?.driverId);
       add(req?.driver?.id);
       add(req?.assignedDriverId);
-      add(req?.requestor?.id);
+
+      // requestor only counts when the request is actively assigned
+      if (isActiveAssignment) {
+        add(req?.requestor?.id);
+        add(req?.requestorId);
+      }
 
       const vehiclesArr = req?.vehicles;
       if (Array.isArray(vehiclesArr)) {
