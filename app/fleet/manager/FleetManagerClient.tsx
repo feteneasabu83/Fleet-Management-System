@@ -456,7 +456,7 @@ export default function FleetManagerClient() {
       tabParam: 'drivers&status=unassigned',
     },
     {
-      label: 'የተመደበ መኪና',
+      label: 'የሹፌሮች የመስክ ሪፖርት',
       value: assignedVehiclesCount,
       icon: ClipboardList,
       chip: 'bg-orange-50 text-orange-600',
