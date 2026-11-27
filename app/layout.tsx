@@ -42,7 +42,7 @@ export default function RootLayout({
             <div className="flex flex-1 min-h-[calc(100vh-84px)] flex-row">
               <SidebarContainer />
               <main className="flex min-h-[calc(100vh-84px)] w-full flex-1 flex-col bg-transparent">
-                <div className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-4">
+                <div className="mx-auto flex w-full flex-1 flex-col px-4">
                   {/* Fleet manager chart (client-side) */}
                   <FleetReportWidget />
                   {children}
