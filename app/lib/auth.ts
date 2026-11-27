@@ -23,6 +23,7 @@ export type UserRole =
   | "ads_viewer"
   | "driver"
   | "maintenance_team"
+  | "hr"
   | "women_social_inclusion"
   | "ethics_anti_corruption";
 
@@ -93,8 +94,14 @@ export function decodeJwt(token: string): DecodedJwt | null {
 // Normalize backend role string
 function normalizeBackendRole(role: string): UserRole | null {
   if (!role) return null;
-  const key = role as BackendUserRole;
-  return backendToFrontendRoleMap[key] || null;
+  const direct = backendToFrontendRoleMap[role as BackendUserRole];
+  if (direct) return direct;
+  // Case-insensitive fallback (e.g. FLEET_MANAGER, fleet-manager)
+  const lower = role.toLowerCase().replace(/[\s-]+/g, "_");
+  for (const [key, value] of Object.entries(backendToFrontendRoleMap)) {
+    if (key.toLowerCase().replace(/[\s-]+/g, "_") === lower) return value;
+  }
+  return null;
 }
 
 // Normalize legacy role strings
@@ -114,6 +121,12 @@ function normalizeRoleString(r: string): UserRole | null {
   if (/(^|\W)(ads[_-]?editor|advert(isement)?s?[_-]?editor|content[_-]?editor|communications)(\W|$)/.test(s))
     return "ads_editor";
   if (/(^|\W)(ads[_-]?viewer|advert(isement)?s?[_-]?viewer)(\W|$)/.test(s)) return "ads_viewer";
+  // Fleet manager variants
+  if (/(^|\W)fleet[_\s-]?manager(\W|$)/.test(s)) return "manager";
+  // HR supervisor
+  if (/(^|\W)hr[_\s-]?(supervisor|admin|manager)?(\W|$)/.test(s) && /hr/.test(s)) return "hr";
+  // Driver variants
+  if (/(^|\W)(driver|shofar|shoffer|chofer)(\W|$)/.test(s)) return "driver";
   // Maintenance team (handle common spellings and formats)
   if (/(^|\W)mainten(a|e)nance[_-]?team(\W|$)/.test(s)) return "maintenance_team";
   return null;

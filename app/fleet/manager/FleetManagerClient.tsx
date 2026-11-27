@@ -13,7 +13,7 @@ import {
   Fuel,
 } from 'lucide-react'
 import { useToast } from '@/app/components/toast-provider'
-import { getCurrentUserRoles } from '@/app/lib/auth'
+import { decodeJwt } from '@/app/lib/auth'
 import { Vehicle, Driver, Assignment, FleetRequestDTO, AssignmentRequest } from '@/app/components/fleet-manager/types'
 import VehiclesTab from '@/app/components/fleet-manager/VehiclesTab'
 import DriversTab from '@/app/components/fleet-manager/DriversTab'
@@ -41,16 +41,37 @@ export default function FleetManagerClient() {
 
   // Restrict page to fleet staff only (fleet manager, admin, HR supervisor)
   useEffect(() => {
-    const roles = getCurrentUserRoles().map((r) => r.toUpperCase())
-    const allowed =
-      roles.some((r) => /(ADMIN|SYSTEM[_-]?ADMIN|SUPERUSER)/.test(r)) ||
-      roles.includes('FLEET_MANAGER') ||
-      roles.includes('FLEET MANAGER') ||
-      roles.includes('FLEET-MANAGER') ||
-      roles.includes('HR_SUPERVISOR') ||
-      roles.includes('HR SUPERVISOR') ||
-      roles.includes('HR-SUPERVISOR')
-    if (!allowed) {
+    try {
+      const token =
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('token') ||
+        ''
+      const payload = token ? decodeJwt(token) : null
+      const raw: any = payload || {}
+      const candidates: string[] = []
+      if (typeof raw.role === 'string') candidates.push(raw.role)
+      if (Array.isArray(raw.role)) candidates.push(...raw.role)
+      if (Array.isArray(raw.roles)) {
+        for (const r of raw.roles) {
+          if (typeof r === 'string') candidates.push(r)
+          else if (r && typeof r.name === 'string') candidates.push(r.name)
+        }
+      }
+      if (raw.realm_access?.roles) candidates.push(...raw.realm_access.roles)
+      const roles = candidates.map((r) => String(r).toUpperCase())
+      const allowed =
+        roles.some((r: string) => /(ADMIN|SYSTEM[_-]?ADMIN|SUPERUSER)/.test(r)) ||
+        roles.includes('FLEET_MANAGER') ||
+        roles.includes('FLEET MANAGER') ||
+        roles.includes('FLEET-MANAGER') ||
+        roles.includes('HR_SUPERVISOR') ||
+        roles.includes('HR SUPERVISOR') ||
+        roles.includes('HR-SUPERVISOR')
+      if (!allowed) {
+        router.replace('/fleet/request')
+      }
+    } catch {
       router.replace('/fleet/request')
     }
   }, [router])
