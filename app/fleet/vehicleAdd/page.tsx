@@ -257,7 +257,7 @@ export default function VehicleAddSheet() {
             <div>
               <h2 className="text-xl font-bold">አዲስ መኪና ይመዝግቡ</h2>
               <p className="text-blue-100 text-sm opacity-90">
-                ወደ ተሽከርካሪዎ አዲስ መኪና ያክሉ
+                አዲስ መኪና ይጨምሩ 
               </p>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function VehicleAddSheet() {
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                 <CarFront className="w-4 h-4 text-blue-600" />
-                አምራች
+                አምራች ሀገር
               </label>
               <input
                 id="make"
@@ -326,7 +326,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2 md:max-w-xs">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Calendar className="w-4 h-4 text-blue-600" />
-              አመት
+              የተሰራበት አመት
             </label>
             <div className="relative">
               <input
@@ -348,7 +348,7 @@ export default function VehicleAddSheet() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                የመነጭ አገር
+                ሀገር
               </label>
               <input
                 id="countryOfOrigin"
@@ -362,7 +362,7 @@ export default function VehicleAddSheet() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                የተቀማጭ ቦታ ብዛት
+                የወንበር ብዛት
               </label>
               <input
                 id="seatingCapacity"
@@ -480,7 +480,7 @@ export default function VehicleAddSheet() {
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <CarFront className="w-4 h-4 text-blue-600" />
-              የተመደበ ሾፌር <span className="text-gray-400 font-normal">(አማራጭ)</span>
+              ሾፌር መድብ<span className="text-gray-400 font-normal">(አማራጭ)</span>
             </label>
             <select
               id="userId"
@@ -549,7 +549,7 @@ export default function VehicleAddSheet() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  መኪና አስቀምጥ
+                  አስቀምጥ
                 </>
               )}
             </button>
