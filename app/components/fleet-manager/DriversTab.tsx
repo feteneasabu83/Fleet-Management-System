@@ -127,222 +127,189 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">Driver Management</h2>
-              <p className="text-indigo-100 mt-1">Manage driver profiles and documents</p>
-            </div>
-          </div>
-          <button
-            onClick={loadDrivers}
-            disabled={driversLoading}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-xl transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-          >
-            <svg className={`w-5 h-5 ${driversLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>{driversLoading ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">የሹፌሮች አስተዳደሪያ</h2>
+          <p className="mt-1 text-sm text-slate-500">የሹፌሮች መገለጫ እና ሰነዶችን ያስተዳድሩ</p>
         </div>
+        <button
+          onClick={loadDrivers}
+          disabled={driversLoading}
+          className="inline-flex items-center gap-2 rounded-lg bg-[#135a98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f4e84] disabled:opacity-60"
+        >
+          <svg className={`h-4 w-4 ${driversLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {driversLoading ? 'በማደስ ላይ...' : 'አድስ'}
+        </button>
       </div>
 
       {/* Filter bar */}
-      <div className="px-6 pt-6 flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
           </svg>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, phone..."
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 text-sm focus:border-indigo-500 focus:outline-none"
+            placeholder="በስም፣ ኢሜይል ወይም ስልክ ይፈልጉ…"
+            className="w-full rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
         >
-          <option value="all">All Drivers</option>
-          <option value="assigned">Assigned</option>
-          <option value="unassigned">Unassigned</option>
+          <option value="all">ሁሉም ሹፌሮች</option>
+          <option value="assigned">ተመድበዋል</option>
+          <option value="unassigned">ያልተመደቡ</option>
         </select>
-        <div className="text-sm text-gray-500 self-center whitespace-nowrap">
-          {filteredDrivers.length} / {drivers.length} drivers
+        <div className="whitespace-nowrap text-sm text-slate-500">
+          {filteredDrivers.length} / {drivers.length} ሹፌሮች
         </div>
       </div>
 
       {/* Drivers Grid */}
-      <div className="p-6">
-        {filteredDrivers.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Drivers Found</h3>
-            <p className="text-gray-400">
-              {drivers.length === 0
-                ? 'Get started by adding drivers to your fleet.'
-                : 'No drivers match the current filters.'}
-            </p>
+      {filteredDrivers.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+            <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            </svg>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredDrivers.map(driver => (
-              <div
-                key={driver.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => router.push(`/fleet/drivers/register?driverId=${encodeURIComponent(driver.id)}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    router.push(`/fleet/drivers/register?driverId=${encodeURIComponent(driver.id)}`);
-                  }
-                }}
-                className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                {/* Driver Header */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">
-                        {driver.firstName?.[0]}{driver.lastName?.[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">
-                        {driver.firstName} {driver.lastName}
-                      </h3>
-                      <p className="text-blue-100 text-sm">{driver.role}</p>
-                    </div>
-                  </div>
+          <h3 className="text-lg font-semibold text-slate-700">ምንም ሹፌር አልተገኘም</h3>
+          <p className="mt-1 text-sm text-slate-400">
+            {drivers.length === 0
+              ? 'ሹፌሮችን ለመመዝገብ ይጀምሩ።'
+              : 'ከሚፈለጉት ማጣሪያዎች ጋር የሚዛመድ ሹፌር የለም።'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredDrivers.map(driver => (
+            <div
+              key={driver.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push(`/fleet/drivers/register?driverId=${encodeURIComponent(driver.id)}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  router.push(`/fleet/drivers/register?driverId=${encodeURIComponent(driver.id)}`);
+                }
+              }}
+              className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#135a98] text-lg font-bold text-white">
+                  {driver.firstName?.[0]}{driver.lastName?.[0]}
                 </div>
-
-                {/* Driver Details */}
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500">Status</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getDriverStatusColor(driver.isActive ? 'active' : 'inactive')}`}>
-                      {driver.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500">Phone</span>
-                    <span className="text-sm text-gray-900">{driver.phone || 'Not provided'}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500">Email</span>
-                    <span className="text-sm text-gray-900 truncate" title={driver.email}>
-                      {driver.email}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500">Member since</span>
-                    <span className="text-sm text-gray-900">
-                      {driver.createdAt ? new Date(driver.createdAt).toLocaleDateString() : 'Unknown'}
-                    </span>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-bold text-slate-900">
+                    {driver.firstName} {driver.lastName}
+                  </h3>
+                  <p className="truncate text-sm text-slate-500">{driver.role || 'ሹፌር'}</p>
                 </div>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${getDriverStatusColor(driver.isActive ? 'active' : 'inactive')}`}>
+                  {driver.isActive ? 'ንቁ' : 'ጊዜያዊ ያልሆነ'}
+                </span>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="px-6 py-4 bg-white border-t border-gray-200">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation() }}
-                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      <span>Edit</span>
-                    </button>
-                    
-                    <button
-                      onClick={(e) => { e.stopPropagation() }}
-                      className="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      <span>Remove</span>
-                    </button>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDriverId(driver.id);
-                        loadDriverDocs(driver.id);
-                        setTimeout(() => {
-                          document.getElementById('driver-docs-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 50);
-                      }}
-                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span>Docs</span>
-                    </button>
-                  </div>
+              <div className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">ስልክ</span>
+                  <span className="font-medium text-slate-900">{driver.phone || 'አልተሰጠም'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">ኢሜይል</span>
+                  <span className="max-w-[55%] truncate font-medium text-slate-900" title={driver.email}>
+                    {driver.email}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">መመዝገቢያ ቀን</span>
+                  <span className="font-medium text-slate-900">
+                    {driver.createdAt ? new Date(driver.createdAt).toLocaleDateString() : 'ያልታወቀ'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">የመኪና ምደባ</span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${driver.assignedVehicle ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {driver.assignedVehicle ? 'ተመድቧል' : 'ያልተመደበ'}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+              <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+                <button
+                  onClick={(e) => { e.stopPropagation() }}
+                  className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                >
+                  አርትዕ
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation() }}
+                  className="flex-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  አስወግድ
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDriverId(driver.id);
+                    loadDriverDocs(driver.id);
+                    setTimeout(() => {
+                      document.getElementById('driver-docs-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 50);
+                  }}
+                  className="flex-1 rounded-lg bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100"
+                >
+                  ሰነዶች
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Documents Panel */}
-      <div id="driver-docs-panel" className="border-t border-gray-200">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Driver Documents</h3>
-              <p className="text-gray-600 text-sm">
-                {!selectedDriverId 
-                  ? "Select a driver and click 'Docs' to manage documents"
-                  : `Managing documents for driver: ${selectedDriverId.slice(0, 8)}...`
-                }
-              </p>
-            </div>
+      <div id="driver-docs-panel" className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">የሹፌር ሰነዶች</h3>
+            <p className="text-xs text-slate-500">
+              {!selectedDriverId
+                ? "ሹፌር ይምረጡ እና 'ሰነዶች' የሚለውን ይጫኑ"
+                : `ለተመረጠው ሹ፜ር ሰነዶችን በማስተዳደር ላይ: ${selectedDriverId.slice(0, 8)}...`
+              }
+            </p>
           </div>
         </div>
 
         {selectedDriverId && (
-          <div className="p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="p-6">
+            <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
               {/* Educational Paper */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-xl border border-slate-200 p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Educational Paper</h4>
-                    <p className="text-sm text-gray-500">Academic qualifications</p>
+                    <h4 className="font-semibold text-slate-900">የትምህርት ማስረጃ</h4>
+                    <p className="text-xs text-slate-500">የትምህርት ደረጃዎች</p>
                   </div>
                 </div>
                 <input
@@ -354,21 +321,21 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
                     if (f) uploadDriverDoc(selectedDriverId, 'educational_paper', f);
                     e.currentTarget.value = '';
                   }}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
                 />
               </div>
 
               {/* License Certificate */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-xl border border-slate-200 p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">License Certificate</h4>
-                    <p className="text-sm text-gray-500">Driving license documents</p>
+                    <h4 className="font-semibold text-slate-900">የፍቃድ ምስክር ወረቀት</h4>
+                    <p className="text-xs text-slate-500">የመንጃ ፍቃድ ሰነዶች</p>
                   </div>
                 </div>
                 <input
@@ -380,21 +347,21 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
                     if (f) uploadDriverDoc(selectedDriverId, 'license_certificate', f);
                     e.currentTarget.value = '';
                   }}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                  className="w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100"
                 />
               </div>
 
               {/* Other Documents */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-xl border border-slate-200 p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Other Documents</h4>
-                    <p className="text-sm text-gray-500">Additional supporting files</p>
+                    <h4 className="font-semibold text-slate-900">ሌሎች ሰነዶች</h4>
+                    <p className="text-xs text-slate-500">ተጨማሪ የሚደግፉ ፋይሎች</p>
                   </div>
                 </div>
                 <input
@@ -406,21 +373,21 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
                     if (f) uploadDriverDoc(selectedDriverId, 'other_documents', f);
                     e.currentTarget.value = '';
                   }}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                  className="w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-purple-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-purple-700 hover:file:bg-purple-100"
                 />
               </div>
 
               {/* Agreement Paper */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="rounded-xl border border-slate-200 p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Agreement Paper</h4>
-                    <p className="text-sm text-gray-500">Contract and agreement files</p>
+                    <h4 className="font-semibold text-slate-900">የስምምነት ሰነድ</h4>
+                    <p className="text-xs text-slate-500">የውል እና ስምምነት ፋይሎች</p>
                   </div>
                 </div>
                 <input
@@ -432,47 +399,47 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
                     if (f) uploadDriverDoc(selectedDriverId, 'agreement_paper', f);
                     e.currentTarget.value = '';
                   }}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                  className="w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-amber-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-amber-700 hover:file:bg-amber-100"
                 />
               </div>
             </div>
 
             {/* Uploaded Documents */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Uploaded Documents</h4>
+            <div className="rounded-xl border border-slate-200 p-5">
+              <h4 className="mb-4 text-base font-bold text-slate-900">የተሰቀሉ ሰነዶች</h4>
               {driverDocs.length === 0 ? (
-                <div className="text-center py-8">
-                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="py-8 text-center">
+                  <svg className="mx-auto mb-3 h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <p className="text-gray-500">No documents uploaded yet.</p>
+                  <p className="text-sm text-slate-400">እስካሁን ምንም ሰነድ አልተሰቀለም።</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {driverDocs.map(doc => (
-                    <div key={doc.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDocTypeColor(doc.docType)}`}>
+                    <div key={doc.id} className="rounded-lg border border-slate-200 p-4 transition hover:shadow-sm">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getDocTypeColor(doc.docType)}`}>
                           {doc.docType.replace('_', ' ')}
                         </span>
                         {doc.url && (
-                          <a 
-                            href={doc.url} 
-                            target="_blank" 
+                          <a
+                            href={doc.url}
+                            target="_blank"
                             rel="noreferrer"
-                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                            className="text-blue-600 transition-colors hover:text-blue-800"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
                           </a>
                         )}
                       </div>
-                      <div className="text-sm font-medium text-gray-900 truncate" title={doc.name}>
+                      <div className="truncate text-sm font-medium text-slate-900" title={doc.name}>
                         {doc.name}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'Unknown date'}
+                      <div className="mt-1 text-xs text-slate-500">
+                        {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : 'ያልታወቀ ቀን'}
                       </div>
                     </div>
                   ))}
