@@ -35,18 +35,18 @@ interface MaintRequest {
 }
 
 const STATUS_LABELS: Record<Status, string> = {
-  DRAFT: "Draft",
-  SUBMITTED: "Submitted",
-  UNDER_MAINTENANCE_REVIEW: "Under Maintenance Review",
-  MAINTENANCE_APPROVED: "Maintenance Approved",
-  MAINTENANCE_DISAPPROVED: "Maintenance Disapproved",
-  PENDING_FLEET_MANAGER: "Pending Fleet Manager",
-  FLEET_MANAGER_ACCEPTED: "Fleet Manager Accepted",
-  FLEET_MANAGER_REJECTED: "Fleet Manager Rejected",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Completed",
-  RETURNED_TO_DRIVER: "Returned to Driver",
-  CANCELLED: "Cancelled",
+  DRAFT: "ረቅድ",
+  SUBMITTED: "ተልኳል",
+  UNDER_MAINTENANCE_REVIEW: "በጥገና ግምገማ ላይ",
+  MAINTENANCE_APPROVED: "ጥገና ጸድቋል",
+  MAINTENANCE_DISAPPROVED: "ጥገና አልተሳካም",
+  PENDING_FLEET_MANAGER: "የባህሪ ስራ አስኪያጅ በመጠባበቅ ላይ",
+  FLEET_MANAGER_ACCEPTED: "የባህሪ ስራ አስኪያጅ ተቀብሏል",
+  FLEET_MANAGER_REJECTED: "የባህሪ ስራ አስኪያጅ አልተቀበለም",
+  IN_PROGRESS: "በሂደት ላይ",
+  COMPLETED: "ተጠናቋል",
+  RETURNED_TO_DRIVER: "ወደ ሹፌሩ ተመልሷል",
+  CANCELLED: "ተሰርዟል",
 }
 
 const STATUS_COLORS: Record<Status, string> = {
@@ -65,8 +65,28 @@ const STATUS_COLORS: Record<Status, string> = {
 }
 
 const CATEGORIES = ["MECHANICAL", "ELECTRICAL", "TIRE", "ENGINE", "ACCIDENT", "ROUTINE_SERVICE", "OTHER"]
+const CATEGORY_LABELS: Record<string, string> = {
+  MECHANICAL: "ሜካኒካዊ",
+  ELECTRICAL: "ኤሌክትሪካዊ",
+  TIRE: "ጎማ",
+  ENGINE: "ሞተር / ኢንጅን",
+  ACCIDENT: "አደጋ",
+  ROUTINE_SERVICE: "መደበኛ አገልግሎት",
+  OTHER: "ሌላ",
+}
 const CONDITIONS = ["OPERATIONAL", "PARTIALLY_OPERATIONAL", "NOT_OPERATIONAL"]
+const CONDITION_LABELS: Record<string, string> = {
+  OPERATIONAL: "በሥራ ላይ ያለ",
+  PARTIALLY_OPERATIONAL: "በከፊል በሥራ ላይ ያለ",
+  NOT_OPERATIONAL: "በሥራ ላይ ያልሆነ",
+}
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"]
+const PRIORITY_LABELS: Record<string, string> = {
+  LOW: "ዝቅተኛ",
+  MEDIUM: "መካከለኛ",
+  HIGH: "ከፍተኛ",
+  URGENT: "አስቸኳይ",
+}
 
 function authHeaders() {
   const token =
@@ -250,7 +270,7 @@ export default function MaintenanceApprovalPage() {
         method: "POST",
         body: JSON.stringify({ ...form1, currentOdometerKm: form1.currentOdometerKm ? Number(form1.currentOdometerKm) : null, attachments }),
       })
-      showToast("Maintenance request submitted")
+      showToast("የጥገና ጥያቄ ተልኳል")
       setForm1({ vehicleId: "", priority: "MEDIUM", category: "MECHANICAL", problemDescription: "", vehicleCondition: "OPERATIONAL", location: "", currentOdometerKm: "", employeeId: "", phone: "" })
       setAttachments([])
       setTab("my-requests")
@@ -292,7 +312,7 @@ export default function MaintenanceApprovalPage() {
           estimatedDurationHours: form2.estimatedDurationHours ? Number(form2.estimatedDurationHours) : null,
         }),
       })
-      showToast("Inspection submitted — forwarded to Fleet Manager")
+      showToast("ጥገና ግምገማ ተልኳል — ወደ ባህሪ ስራ አስኪያጅ ተላክ")
       setDetail(null)
       loadAll()
     } catch (e: any) {
@@ -303,7 +323,7 @@ export default function MaintenanceApprovalPage() {
   const startReview = async (id: string) => {
     try {
       await api(`/requests/${id}/start-review`, { method: "POST" })
-      showToast("Review started")
+      showToast("ግምገማ ተጀምሯል")
       loadAll()
     } catch (e: any) { showToast(e?.message || "Failed") }
   }
@@ -314,7 +334,7 @@ export default function MaintenanceApprovalPage() {
     if (!detail) return
     try {
       await api(`/requests/${detail.id}/manager-decision`, { method: "POST", body: JSON.stringify(form3) })
-      showToast(`Request ${form3.decision === "ACCEPTED" ? "accepted" : "rejected"}`)
+      showToast(form3.decision === "ACCEPTED" ? "ጥያቄ ተቀብሏል" : "ጥያቄ ተቀባይነት አላገኘም")
       setDetail(null)
       loadAll()
     } catch (e: any) {
@@ -340,7 +360,7 @@ export default function MaintenanceApprovalPage() {
           partsUsed,
         }),
       })
-      showToast("Execution record saved")
+      showToast("የአፈጻጸም መዝገብ ተቀምጧል")
       setDetail(null)
       loadAll()
     } catch (e: any) {
@@ -351,7 +371,7 @@ export default function MaintenanceApprovalPage() {
   const driverConfirm = async (id: string) => {
     try {
       await api(`/requests/${id}/driver-confirm`, { method: "POST" })
-      showToast("Vehicle receipt confirmed")
+      showToast("መኪና መቀበያ ተረጋግጧል")
       loadAll()
     } catch (e: any) { showToast(e?.message || "Failed") }
   }
@@ -359,7 +379,7 @@ export default function MaintenanceApprovalPage() {
   const cancelRequest = async (id: string) => {
     try {
       await api(`/requests/${id}/cancel`, { method: "POST" })
-      showToast("Request cancelled")
+      showToast("ጥገና ተሰርዟል")
       loadAll()
     } catch (e: any) { showToast(e?.message || "Cancel failed") }
   }
@@ -391,19 +411,19 @@ export default function MaintenanceApprovalPage() {
       <table className="min-w-full text-sm">
         <thead>
           <tr className="text-left text-gray-500 border-b">
-            <th className="py-2 pr-4">Request ID</th>
-            <th className="py-2 pr-4">Driver</th>
-            <th className="py-2 pr-4">Plate No.</th>
-            <th className="py-2 pr-4">Problem</th>
-            <th className="py-2 pr-4">Maint. Decision</th>
-            <th className="py-2 pr-4">Manager Decision</th>
-            <th className="py-2 pr-4">Status</th>
-            {showActions && <th className="py-2">Actions</th>}
+            <th className="py-2 pr-4">የጥያቄ ቁጥር</th>
+            <th className="py-2 pr-4">ሹፌር</th>
+            <th className="py-2 pr-4">የመኪና ቁጥር</th>
+            <th className="py-2 pr-4">ችግር</th>
+            <th className="py-2 pr-4">የጥገና ውሳኔ</th>
+            <th className="py-2 pr-4">የባህሪ ስራ አስኪያጅ ውሳኔ</th>
+            <th className="py-2 pr-4">ሁኔታ</th>
+            {showActions && <th className="py-2">እርምጃዎች</th>}
           </tr>
         </thead>
         <tbody>
           {list.length === 0 && (
-            <tr><td colSpan={8} className="py-6 text-center text-gray-400">No requests found</td></tr>
+            <tr><td colSpan={8} className="py-6 text-center text-gray-400">ምንም ጥያቄ አልተገኘም</td></tr>
           )}
           {list.map((r) => (
             <tr key={r.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => openDetail(r.id)}>
@@ -411,20 +431,20 @@ export default function MaintenanceApprovalPage() {
               <td className="py-2 pr-4">{r.driver?.firstName} {r.driver?.lastName}</td>
               <td className="py-2 pr-4">{r.vehicle?.plate || "-"}</td>
               <td className="py-2 pr-4 max-w-[200px] truncate">{r.problemDescription}</td>
-              <td className="py-2 pr-4">{r.inspection ? (r.inspection.decision === "APPROVED" ? "Approved" : "Disapproved") : "-"}</td>
-              <td className="py-2 pr-4">{r.managerDecision ? (r.managerDecision.decision === "ACCEPTED" ? "Accepted" : "Rejected") : "Pending"}</td>
+              <td className="py-2 pr-4">{r.inspection ? (r.inspection.decision === "APPROVED" ? "ጸድቋል" : "አልተሳካም") : "-"}</td>
+              <td className="py-2 pr-4">{r.managerDecision ? (r.managerDecision.decision === "ACCEPTED" ? "ተቀብሏል" : "ተቀባይነት አላገኘም") : "በመጠባበቅ ላይ"}</td>
               <td className="py-2 pr-4"><StatusBadge status={r.status} /></td>
               {showActions && (
                 <td className="py-2" onClick={(e) => e.stopPropagation()}>
                   <div className="flex gap-2">
                     {isMaintTeam && r.status === "SUBMITTED" && (
-                      <button onClick={() => startReview(r.id)} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded">Start Review</button>
+                      <button onClick={() => startReview(r.id)} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded">ግምገማ ጀምር</button>
                     )}
                     {isDriver && ["SUBMITTED", "DRAFT"].includes(r.status) && (
-                      <button onClick={() => cancelRequest(r.id)} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Cancel</button>
+                      <button onClick={() => cancelRequest(r.id)} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">ሰርዝ</button>
                     )}
                     {isDriver && r.status === "COMPLETED" && (
-                      <button onClick={() => driverConfirm(r.id)} className="text-xs bg-emerald-600 text-white px-2 py-1 rounded">Confirm Receipt</button>
+                      <button onClick={() => driverConfirm(r.id)} className="text-xs bg-emerald-600 text-white px-2 py-1 rounded">መቀበያ አረጋግጥ</button>
                     )}
                   </div>
                 </td>
@@ -459,21 +479,21 @@ export default function MaintenanceApprovalPage() {
           <div className="p-6 space-y-6">
             {/* Request info */}
             <section>
-              <h4 className="font-semibold text-gray-800 mb-2">Driver Request</h4>
+              <h4 className="font-semibold text-gray-800 mb-2">የሹፌር ጥያቄ</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                <div><span className="text-gray-500">Driver:</span> {d.driver?.firstName} {d.driver?.lastName}</div>
-                <div><span className="text-gray-500">Vehicle:</span> {d.vehicle?.plate} ({d.vehicle?.make} {d.vehicle?.model})</div>
-                <div><span className="text-gray-500">Category:</span> {d.category}</div>
-                <div><span className="text-gray-500">Priority:</span> {d.priority || "-"}</div>
-                <div><span className="text-gray-500">Condition:</span> {d.vehicleCondition}</div>
-                <div><span className="text-gray-500">Odometer:</span> {d.currentOdometerKm ? `${d.currentOdometerKm} km` : "-"}</div>
-                <div><span className="text-gray-500">Location:</span> {d.location || "-"}</div>
-                <div><span className="text-gray-500">Submitted:</span> {new Date(d.submittedAt).toLocaleString()}</div>
+                <div><span className="text-gray-500">ሹፌር:</span> {d.driver?.firstName} {d.driver?.lastName}</div>
+                <div><span className="text-gray-500">መኪና:</span> {d.vehicle?.plate} ({d.vehicle?.make} {d.vehicle?.model})</div>
+                <div><span className="text-gray-500">ምድብ:</span> {CATEGORY_LABELS[d.category] || d.category}</div>
+                <div><span className="text-gray-500">ቅድሚያ ምድብ:</span> {PRIORITY_LABELS[d.priority || ""] || d.priority || "-"}</div>
+                <div><span className="text-gray-500">ሁኔታ:</span> {CONDITION_LABELS[d.vehicleCondition] || d.vehicleCondition}</div>
+                <div><span className="text-gray-500">ኦዶሜትር:</span> {d.currentOdometerKm ? `${d.currentOdometerKm} ኪ.ሜ` : "-"}</div>
+                <div><span className="text-gray-500">ቦታ:</span> {d.location || "-"}</div>
+                <div><span className="text-gray-500">የቀረበበት:</span> {new Date(d.submittedAt).toLocaleString()}</div>
               </div>
               <p className="mt-2 text-sm bg-gray-50 p-3 rounded">{d.problemDescription}</p>
               {d.attachments && (
                 <div className="mt-2 text-sm">
-                  <span className="text-gray-500">Attachments: </span>
+                  <span className="text-gray-500">አባሪያዎች: </span>
                   {JSON.parse(d.attachments).map((u: string, i: number) => (
                     <a key={i} href={u} target="_blank" className="text-blue-600 underline mr-2">{u.split("/").pop()}</a>
                   ))}
@@ -484,29 +504,29 @@ export default function MaintenanceApprovalPage() {
             {/* Inspection report */}
             {d.inspection && (
               <section className="border rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Maintenance Team Inspection</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">የጥገና ቡድን ግምገማ</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-gray-500">Decision:</span> <b>{d.inspection.decision}</b></div>
-                  <div><span className="text-gray-500">Reason:</span> {d.inspection.decisionReason}</div>
-                  <div><span className="text-gray-500">Estimated cost:</span> {[
+                  <div><span className="text-gray-500">ውሳኔ:</span> <b>{d.inspection.decision === "APPROVED" ? "ጸድቋል" : "አልተሳካም"}</b></div>
+                  <div><span className="text-gray-500">ምክንያት:</span> {d.inspection.decisionReason}</div>
+                  <div><span className="text-gray-500">የሚገመት ወጪ:</span> {[
                     d.inspection.estimatedPartsCost, d.inspection.estimatedLaborCost, d.inspection.estimatedOtherCost,
                   ].some(Boolean) ? `$${(Number(d.inspection.estimatedPartsCost || 0) + Number(d.inspection.estimatedLaborCost || 0) + Number(d.inspection.estimatedOtherCost || 0)).toFixed(2)}` : "-"}</div>
-                  <div><span className="text-gray-500">Workshop:</span> {d.inspection.workshop || "-"}</div>
+                  <div><span className="text-gray-500">ሥራ ቤት:</span> {d.inspection.workshop === "INTERNAL" ? "ውስጣዊ" : d.inspection.workshop === "EXTERNAL" ? "ውጫዊ" : d.inspection.workshop || "-"}</div>
                 </div>
-                {d.inspection.technicalFindings && <p className="mt-2 text-sm"><b>Findings:</b> {d.inspection.technicalFindings}</p>}
-                {d.inspection.requiredRepairs && <p className="text-sm"><b>Required repairs:</b> {d.inspection.requiredRepairs}</p>}
+                {d.inspection.technicalFindings && <p className="mt-2 text-sm"><b>ግኝቶች:</b> {d.inspection.technicalFindings}</p>}
+                {d.inspection.requiredRepairs && <p className="text-sm"><b>የሚያስፈልጉ ጥገናዎች:</b> {d.inspection.requiredRepairs}</p>}
               </section>
             )}
 
             {/* Manager decision */}
             {d.managerDecision && (
               <section className="border rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Fleet Manager Decision</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">የባህሪ ስራ አስኪያጅ ውሳኔ</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-gray-500">Decision:</span> <b>{d.managerDecision.decision}</b></div>
-                  <div><span className="text-gray-500">Remarks:</span> {d.managerDecision.remarks}</div>
-                  <div><span className="text-gray-500">Budget:</span> {d.managerDecision.budgetAvailable == null ? "-" : d.managerDecision.budgetAvailable ? "Available" : "Not available"}</div>
-                  <div><span className="text-gray-500">Date:</span> {new Date(d.managerDecision.decidedAt).toLocaleString()}</div>
+                  <div><span className="text-gray-500">ውሳኔ:</span> <b>{d.managerDecision.decision === "ACCEPTED" ? "ተቀብሏል" : "ተቀባይነት አላገኘም"}</b></div>
+                  <div><span className="text-gray-500">ማስታወሻ:</span> {d.managerDecision.remarks}</div>
+                  <div><span className="text-gray-500">በጀት:</span> {d.managerDecision.budgetAvailable == null ? "-" : d.managerDecision.budgetAvailable ? "አለ" : "የለም"}</div>
+                  <div><span className="text-gray-500">ቀን:</span> {new Date(d.managerDecision.decidedAt).toLocaleString()}</div>
                 </div>
               </section>
             )}
@@ -514,12 +534,12 @@ export default function MaintenanceApprovalPage() {
             {/* Execution */}
             {showTask && d.task && (
               <section className="border rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Maintenance Execution</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">የጥገና አፈጻጸም</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-gray-500">Workshop:</span> {d.task.workshop || "-"}</div>
-                  <div><span className="text-gray-500">Actual cost:</span> {d.task.actualCost ? `$${d.task.actualCost}` : "-"}</div>
-                  <div><span className="text-gray-500">Vehicle status:</span> {d.task.vehicleStatus || "-"}</div>
-                  <div><span className="text-gray-500">Completed:</span> {d.task.completionDate ? new Date(d.task.completionDate).toLocaleDateString() : "-"}</div>
+                  <div><span className="text-gray-500">ሥራ ቤት:</span> {d.task.workshop || "-"}</div>
+                  <div><span className="text-gray-500">ትክክለኛ ወጪ:</span> {d.task.actualCost ? `$${d.task.actualCost}` : "-"}</div>
+                  <div><span className="text-gray-500">የመኪና ሁኔታ:</span> {d.task.vehicleStatus === "REPAIRED" ? "ተጠግኗል" : d.task.vehicleStatus === "PARTIALLY_REPAIRED" ? "በከፊል ተጠግኗል" : d.task.vehicleStatus === "NOT_REPAIRED" ? "አልተጠገነም" : d.task.vehicleStatus || "-"}</div>
+                  <div><span className="text-gray-500">የተጠናቀቀበት:</span> {d.task.completionDate ? new Date(d.task.completionDate).toLocaleDateString() : "-"}</div>
                 </div>
               </section>
             )}
@@ -527,13 +547,13 @@ export default function MaintenanceApprovalPage() {
             {/* History */}
             {d.history && d.history.length > 0 && (
               <section>
-                <h4 className="font-semibold text-gray-800 mb-2">Approval History</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">የፍቃድ ታሪክ</h4>
                 <ol className="text-sm space-y-1 border-l-2 border-gray-200 pl-4">
                   {d.history.map((h) => (
                     <li key={h.id}>
                       <b>{h.action}</b>
                       {h.fromStatus && h.toStatus ? ` (${STATUS_LABELS[h.fromStatus]} → ${STATUS_LABELS[h.toStatus]})` : ""}
-                      {" — "}{h.actor ? `${h.actor.firstName} ${h.actor.lastName}` : "System"} ({h.actor?.role || ""})
+                      {" — "}{h.actor ? `${h.actor.firstName} ${h.actor.lastName}` : "ስርዓት"} ({h.actor?.role || ""})
                       <span className="text-gray-400"> · {new Date(h.createdAt).toLocaleString()}</span>
                       {h.notes && <div className="text-gray-500">{h.notes}</div>}
                     </li>
@@ -545,97 +565,97 @@ export default function MaintenanceApprovalPage() {
             {/* Form 2 */}
             {canInspect && (
               <form onSubmit={submitInspection} className="border-2 border-indigo-200 rounded-lg p-4 space-y-3">
-                <h4 className="font-semibold text-indigo-800">Form 2 — Maintenance Team Inspection & Decision</h4>
+                <h4 className="font-semibold text-indigo-800">ቅጽ 2 — የጥገና ቡድን ግምገማ እና ውሳኔ</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Field label="Inspection Officer Employee ID"><input className={inputCls} value={form2.officerEmployeeId} onChange={(e) => setForm2({ ...form2, officerEmployeeId: e.target.value })} /></Field>
-                  <Field label="Workshop">
+                  <Field label="የግምገማ ኦፊሰር የሰራተኛ መለያ"><input className={inputCls} value={form2.officerEmployeeId} onChange={(e) => setForm2({ ...form2, officerEmployeeId: e.target.value })} /></Field>
+                  <Field label="ሥራ ቤት">
                     <select className={inputCls} value={form2.workshop} onChange={(e) => setForm2({ ...form2, workshop: e.target.value })}>
-                      <option value="INTERNAL">Internal workshop</option>
-                      <option value="EXTERNAL">External workshop</option>
+                      <option value="INTERNAL">ውስጣዊ ሥራ ቤት</option>
+                      <option value="EXTERNAL">ውጫዊ ሥራ ቤት</option>
                     </select>
                   </Field>
-                  <Field label="Estimated duration (hours)"><input type="number" className={inputCls} value={form2.estimatedDurationHours} onChange={(e) => setForm2({ ...form2, estimatedDurationHours: e.target.value })} /></Field>
-                  <Field label="Parts cost"><input type="number" className={inputCls} value={form2.estimatedPartsCost} onChange={(e) => setForm2({ ...form2, estimatedPartsCost: e.target.value })} /></Field>
-                  <Field label="Labor cost"><input type="number" className={inputCls} value={form2.estimatedLaborCost} onChange={(e) => setForm2({ ...form2, estimatedLaborCost: e.target.value })} /></Field>
-                  <Field label="Other cost"><input type="number" className={inputCls} value={form2.estimatedOtherCost} onChange={(e) => setForm2({ ...form2, estimatedOtherCost: e.target.value })} /></Field>
+                  <Field label="የሚገመት ጊዜ (ሰዓታት)"><input type="number" className={inputCls} value={form2.estimatedDurationHours} onChange={(e) => setForm2({ ...form2, estimatedDurationHours: e.target.value })} /></Field>
+                  <Field label="የክፍሎች ወጪ"><input type="number" className={inputCls} value={form2.estimatedPartsCost} onChange={(e) => setForm2({ ...form2, estimatedPartsCost: e.target.value })} /></Field>
+                  <Field label="የሰራተኛ ወጪ"><input type="number" className={inputCls} value={form2.estimatedLaborCost} onChange={(e) => setForm2({ ...form2, estimatedLaborCost: e.target.value })} /></Field>
+                  <Field label="ሌላ ወጪ"><input type="number" className={inputCls} value={form2.estimatedOtherCost} onChange={(e) => setForm2({ ...form2, estimatedOtherCost: e.target.value })} /></Field>
                 </div>
-                <Field label="Problem verified?">
+                <Field label="ችግሩ ተረጋግጧል?">
                   <select className={inputCls} value={form2.problemVerified ? "yes" : "no"} onChange={(e) => setForm2({ ...form2, problemVerified: e.target.value === "yes" })}>
-                    <option value="yes">Confirmed</option>
-                    <option value="no">Not confirmed</option>
+                    <option value="yes">ተረጋግጧል</option>
+                    <option value="no">አልተረጋገጠም</option>
                   </select>
                 </Field>
-                <Field label="Technical findings"><textarea className={inputCls} rows={2} value={form2.technicalFindings} onChange={(e) => setForm2({ ...form2, technicalFindings: e.target.value })} /></Field>
-                <Field label="Required repairs (parts & services)"><textarea className={inputCls} rows={2} value={form2.requiredRepairs} onChange={(e) => setForm2({ ...form2, requiredRepairs: e.target.value })} /></Field>
+                <Field label="ቴክኒካዊ ግኝቶች"><textarea className={inputCls} rows={2} value={form2.technicalFindings} onChange={(e) => setForm2({ ...form2, technicalFindings: e.target.value })} /></Field>
+                <Field label="የሚያስፈልጉ ጥገናዎች (ክፍሎች እና አገልግሎቶች)"><textarea className={inputCls} rows={2} value={form2.requiredRepairs} onChange={(e) => setForm2({ ...form2, requiredRepairs: e.target.value })} /></Field>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field label="Decision">
+                  <Field label="ውሳኔ">
                     <select className={inputCls} value={form2.decision} onChange={(e) => setForm2({ ...form2, decision: e.target.value })}>
-                      <option value="APPROVED">Approve</option>
-                      <option value="DISAPPROVED">Disapprove</option>
+                      <option value="APPROVED">አጽድቅ</option>
+                      <option value="DISAPPROVED">አትስማማ</option>
                     </select>
                   </Field>
-                  <Field label="Decision reason *"><input required className={inputCls} value={form2.decisionReason} onChange={(e) => setForm2({ ...form2, decisionReason: e.target.value })} /></Field>
+                  <Field label="የውሳኔ ምክንያት *"><input required className={inputCls} value={form2.decisionReason} onChange={(e) => setForm2({ ...form2, decisionReason: e.target.value })} /></Field>
                 </div>
-                <Field label="Technical justification"><textarea className={inputCls} rows={2} value={form2.technicalJustification} onChange={(e) => setForm2({ ...form2, technicalJustification: e.target.value })} /></Field>
-                <Field label="Digital signature (name)"><input className={inputCls} value={form2.signature} onChange={(e) => setForm2({ ...form2, signature: e.target.value })} /></Field>
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-medium">Submit Inspection → Forward to Fleet Manager</button>
+                <Field label="ቴክኒካዊ ማረጋገጫ"><textarea className={inputCls} rows={2} value={form2.technicalJustification} onChange={(e) => setForm2({ ...form2, technicalJustification: e.target.value })} /></Field>
+                <Field label="ዲጂታል ፊርማ (ስም)"><input className={inputCls} value={form2.signature} onChange={(e) => setForm2({ ...form2, signature: e.target.value })} /></Field>
+                <button className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-medium">ግምገማ አስገባ → ወደ ባህሪ ስራ አስኪያጅ ላክ</button>
               </form>
             )}
 
             {/* Form 3 */}
             {canDecide && (
               <form onSubmit={submitManagerDecision} className="border-2 border-emerald-200 rounded-lg p-4 space-y-3">
-                <h4 className="font-semibold text-emerald-800">Form 3 — Fleet Manager Final Decision</h4>
+                <h4 className="font-semibold text-emerald-800">ቅጽ 3 — የባህሪ ስራ አስኪያጅ መጨረሻ ውሳኔ</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field label="Decision">
+                  <Field label="ውሳኔ">
                     <select className={inputCls} value={form3.decision} onChange={(e) => setForm3({ ...form3, decision: e.target.value })}>
-                      <option value="ACCEPTED">Accept</option>
-                      <option value="REJECTED">Reject</option>
+                      <option value="ACCEPTED">ተቀብል</option>
+                      <option value="REJECTED">አትቀበል</option>
                     </select>
                   </Field>
-                  <Field label="Budget available?">
+                  <Field label="በጀት አለ?">
                     <select className={inputCls} value={form3.budgetAvailable ? "yes" : "no"} onChange={(e) => setForm3({ ...form3, budgetAvailable: e.target.value === "yes" })}>
-                      <option value="yes">Budget available</option>
-                      <option value="no">Not available</option>
+                      <option value="yes">በጀት አለ</option>
+                      <option value="no">የለም</option>
                     </select>
                   </Field>
                 </div>
-                <Field label="Manager remarks / explanation *"><textarea required className={inputCls} rows={2} value={form3.remarks} onChange={(e) => setForm3({ ...form3, remarks: e.target.value })} /></Field>
-                <Field label="Manager signature (name)"><input className={inputCls} value={form3.signature} onChange={(e) => setForm3({ ...form3, signature: e.target.value })} /></Field>
-                <button className="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-medium">Submit Final Decision</button>
+                <Field label="የአስኪያጅ ማስታወሻ / ማብራሪያ *"><textarea required className={inputCls} rows={2} value={form3.remarks} onChange={(e) => setForm3({ ...form3, remarks: e.target.value })} /></Field>
+                <Field label="የአስኪያጅ ፊርማ (ስም)"><input className={inputCls} value={form3.signature} onChange={(e) => setForm3({ ...form3, signature: e.target.value })} /></Field>
+                <button className="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-medium">መጨረሻ ውሳኔ አስገባ</button>
               </form>
             )}
 
             {/* Form 4 */}
             {canExecute && (
               <form onSubmit={submitTask} className="border-2 border-cyan-200 rounded-lg p-4 space-y-3">
-                <h4 className="font-semibold text-cyan-800">Form 4 — Maintenance Execution & Completion</h4>
+                <h4 className="font-semibold text-cyan-800">ቅጽ 4 — የጥገና አፈጻጸም እና ማጠናቀቂያ</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <Field label="Technician">
+                  <Field label="ቴክኒሻን">
                     <select className={inputCls} value={form4.technicianId} onChange={(e) => setForm4({ ...form4, technicianId: e.target.value })}>
-                      <option value="">Select technician…</option>
+                      <option value="">ቴክኒሻን ይምረጡ…</option>
                       {technicians.map((t: any) => (
                         <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.role})</option>
                       ))}
                     </select>
                   </Field>
-                  <Field label="Workshop"><input className={inputCls} value={form4.workshop} onChange={(e) => setForm4({ ...form4, workshop: e.target.value })} /></Field>
-                  <Field label="Repair start date"><input type="datetime-local" className={inputCls} value={form4.repairStartDate} onChange={(e) => setForm4({ ...form4, repairStartDate: e.target.value })} /></Field>
-                  <Field label="Actual cost"><input type="number" className={inputCls} value={form4.actualCost} onChange={(e) => setForm4({ ...form4, actualCost: e.target.value })} /></Field>
-                  <Field label="Completion date"><input type="datetime-local" className={inputCls} value={form4.completionDate} onChange={(e) => setForm4({ ...form4, completionDate: e.target.value })} /></Field>
-                  <Field label="Final odometer (km)"><input type="number" className={inputCls} value={form4.finalOdometerKm} onChange={(e) => setForm4({ ...form4, finalOdometerKm: e.target.value })} /></Field>
-                  <Field label="Vehicle status">
+                  <Field label="ሥራ ቤት"><input className={inputCls} value={form4.workshop} onChange={(e) => setForm4({ ...form4, workshop: e.target.value })} /></Field>
+                  <Field label="የጥገና የመጀመሪያ ቀን"><input type="datetime-local" className={inputCls} value={form4.repairStartDate} onChange={(e) => setForm4({ ...form4, repairStartDate: e.target.value })} /></Field>
+                  <Field label="ትክክለኛ ወጪ"><input type="number" className={inputCls} value={form4.actualCost} onChange={(e) => setForm4({ ...form4, actualCost: e.target.value })} /></Field>
+                  <Field label="የማጠናቀቂያ ቀን"><input type="datetime-local" className={inputCls} value={form4.completionDate} onChange={(e) => setForm4({ ...form4, completionDate: e.target.value })} /></Field>
+                  <Field label="መጨረሻ ኦዶሜትር (ኪ.ሜ)"><input type="number" className={inputCls} value={form4.finalOdometerKm} onChange={(e) => setForm4({ ...form4, finalOdometerKm: e.target.value })} /></Field>
+                  <Field label="የመኪና ሁኔታ">
                     <select className={inputCls} value={form4.vehicleStatus} onChange={(e) => setForm4({ ...form4, vehicleStatus: e.target.value })}>
-                      <option value="REPAIRED">Repaired</option>
-                      <option value="PARTIALLY_REPAIRED">Partially repaired</option>
-                      <option value="NOT_REPAIRED">Not repaired</option>
+                      <option value="REPAIRED">ተጠግኗል</option>
+                      <option value="PARTIALLY_REPAIRED">በከፊል ተጠግኗል</option>
+                      <option value="NOT_REPAIRED">አልተጠገነም</option>
                     </select>
                   </Field>
                 </div>
-                <Field label="Parts used (JSON: [{&quot;name&quot;:&quot;...&quot;,&quot;quantity&quot;:1}])"><textarea className={inputCls} rows={2} value={form4.partsUsed} onChange={(e) => setForm4({ ...form4, partsUsed: e.target.value })} placeholder='[{"name":"Brake pads","quantity":2}]' /></Field>
-                <Field label="Repair description / work performed"><textarea className={inputCls} rows={2} value={form4.repairDescription} onChange={(e) => setForm4({ ...form4, repairDescription: e.target.value })} /></Field>
-                <Field label="Technician remarks"><textarea className={inputCls} rows={2} value={form4.technicianRemarks} onChange={(e) => setForm4({ ...form4, technicianRemarks: e.target.value })} /></Field>
-                <button className="bg-cyan-600 text-white px-4 py-2 rounded text-sm font-medium">Save Execution Record</button>
+                <Field label="የተጠቀሙ ክፍሎች (JSON: [{&quot;name&quot;:&quot;...&quot;,&quot;quantity&quot;:1}])"><textarea className={inputCls} rows={2} value={form4.partsUsed} onChange={(e) => setForm4({ ...form4, partsUsed: e.target.value })} placeholder='[{"name":"የፍሬን ኩሽና","quantity":2}]' /></Field>
+                <Field label="የጥገና መግለጫ / የተሰራው ስራ"><textarea className={inputCls} rows={2} value={form4.repairDescription} onChange={(e) => setForm4({ ...form4, repairDescription: e.target.value })} /></Field>
+                <Field label="የቴክኒሻን ማስታወሻ"><textarea className={inputCls} rows={2} value={form4.technicianRemarks} onChange={(e) => setForm4({ ...form4, technicianRemarks: e.target.value })} /></Field>
+                <button className="bg-cyan-600 text-white px-4 py-2 rounded text-sm font-medium">የአፈጻጸም መዝገብ አስቀምጥ</button>
               </form>
             )}
           </div>
@@ -646,14 +666,14 @@ export default function MaintenanceApprovalPage() {
 
   // ---------- tabs (staff only; drivers use sidebar deep links) ----------
   const teamTabs = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "review", label: "Review Queue" },
-    { id: "register", label: "Request Register" },
+    { id: "dashboard", label: "ዳሽቦርድ" },
+    { id: "review", label: "የግምገማ ወረፊት" },
+    { id: "register", label: "የጥያቄዎች መዝገብ" },
   ]
   const managerTabs = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "pending", label: "Pending Decisions" },
-    { id: "register", label: "Request Register" },
+    { id: "dashboard", label: "ዳሽቦርድ" },
+    { id: "pending", label: "በመጠባበቅ ላይ ያሉ ውሳኔዎች" },
+    { id: "register", label: "የጥያቄዎች መዝገብ" },
   ]
   const tabs = isManager ? managerTabs : teamTabs
 
@@ -683,53 +703,53 @@ export default function MaintenanceApprovalPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading…</div>
+        <div className="text-center py-12 text-gray-400">በመጫን ላይ…</div>
       ) : (
         <>
           {/* DRIVER VIEWS */}
           {isDriver && tab === "new-request" && (
             <form onSubmit={submitRequest} className="bg-white rounded-lg shadow border p-6 space-y-4 w-full">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Vehicle *">
+                <Field label="መኪና *">
                   <select required className={inputCls} value={form1.vehicleId} onChange={(e) => setForm1({ ...form1, vehicleId: e.target.value })}>
-                    <option value="">Select vehicle…</option>
+                    <option value="">መኪና ይምረጡ…</option>
                     {vehicles.map((v: any) => (
                       <option key={v.id} value={v.id}>{v.plate || v.id} {v.make ? `— ${v.make} ${v.model || ""}` : ""}</option>
                     ))}
                   </select>
                 </Field>
-                <Field label="Priority">
+                <Field label="ቅድሚያ ምድብ">
                   <select className={inputCls} value={form1.priority} onChange={(e) => setForm1({ ...form1, priority: e.target.value })}>
-                    {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
+                    {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>)}
                   </select>
                 </Field>
-                <Field label="Maintenance category *">
+                <Field label="የጥገና ምድብ *">
                   <select required className={inputCls} value={form1.category} onChange={(e) => setForm1({ ...form1, category: e.target.value })}>
-                    {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace(/_/g, " ")}</option>)}
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
                   </select>
                 </Field>
-                <Field label="Vehicle condition *">
+                <Field label="የመኪና ሁኔታ *">
                   <select required className={inputCls} value={form1.vehicleCondition} onChange={(e) => setForm1({ ...form1, vehicleCondition: e.target.value })}>
-                    {CONDITIONS.map((c) => <option key={c} value={c}>{c.replace(/_/g, " ")}</option>)}
+                    {CONDITIONS.map((c) => <option key={c} value={c}>{CONDITION_LABELS[c]}</option>)}
                   </select>
                 </Field>
-                <Field label="Current odometer (KM)"><input type="number" className={inputCls} value={form1.currentOdometerKm} onChange={(e) => setForm1({ ...form1, currentOdometerKm: e.target.value })} /></Field>
-                <Field label="Location"><input className={inputCls} value={form1.location} onChange={(e) => setForm1({ ...form1, location: e.target.value })} placeholder="Current vehicle location" /></Field>
-                <Field label="Employee ID"><input className={inputCls} value={form1.employeeId} onChange={(e) => setForm1({ ...form1, employeeId: e.target.value })} /></Field>
-                <Field label="Phone"><input className={inputCls} value={form1.phone} onChange={(e) => setForm1({ ...form1, phone: e.target.value })} /></Field>
+                <Field label="የአሁኑ ኦዶሜትር (ኪ.ሜ)"><input type="number" className={inputCls} value={form1.currentOdometerKm} onChange={(e) => setForm1({ ...form1, currentOdometerKm: e.target.value })} /></Field>
+                <Field label="ቦታ"><input className={inputCls} value={form1.location} onChange={(e) => setForm1({ ...form1, location: e.target.value })} placeholder="የመኪናው አሁን ያለበት ቦታ" /></Field>
+                <Field label="የሰራተኛ መለያ"><input className={inputCls} value={form1.employeeId} onChange={(e) => setForm1({ ...form1, employeeId: e.target.value })} /></Field>
+                <Field label="ስልክ"><input className={inputCls} value={form1.phone} onChange={(e) => setForm1({ ...form1, phone: e.target.value })} /></Field>
               </div>
-              <Field label="Problem description *">
+              <Field label="የችግር መግለጫ *">
                 <textarea required rows={3} className={inputCls} value={form1.problemDescription} onChange={(e) => setForm1({ ...form1, problemDescription: e.target.value })} />
               </Field>
-              <Field label="Supporting documents (photos / records)">
+              <Field label="የሚደግፉ ሰነዶች (ፎቶዎች / መዝገቦች)">
                 <input type="file" multiple accept="image/*,.pdf" className="text-sm"
                   onChange={(e) => { Array.from(e.target.files || []).forEach(uploadFile) }} />
-                {uploading && <p className="text-xs text-gray-500 mt-1">Uploading…</p>}
+                {uploading && <p className="text-xs text-gray-500 mt-1">በመስቀል ላይ…</p>}
                 {attachments.length > 0 && (
-                  <div className="mt-1 text-xs text-blue-600">{attachments.length} file(s) attached</div>
+                  <div className="mt-1 text-xs text-blue-600">{attachments.length} ፋይል ተያይዟል</div>
                 )}
               </Field>
-              <button className="bg-blue-600 text-white px-5 py-2 rounded font-medium">Submit Request</button>
+              <button className="bg-blue-600 text-white px-5 py-2 rounded font-medium">ጥያቄ አስገባ</button>
             </form>
           )}
 
@@ -744,36 +764,36 @@ export default function MaintenanceApprovalPage() {
             <div className="space-y-6">
               {isMaintTeam && (
                 <>
-                  <h2 className="text-lg font-semibold">Maintenance Team Dashboard</h2>
+                  <h2 className="text-lg font-semibold">የጥገና ቡድን ዳሽቦርድ</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard label="New requests" value={stats.newRequests} color="text-blue-600" />
-                    <StatCard label="Under inspection" value={stats.underInspection} color="text-indigo-600" />
-                    <StatCard label="Approved" value={stats.approved} color="text-green-600" />
-                    <StatCard label="Disapproved" value={stats.disapproved} color="text-orange-600" />
-                    <StatCard label="Pending manager" value={stats.pendingManager} color="text-yellow-600" />
-                    <StatCard label="In progress" value={stats.inProgress} color="text-cyan-600" />
-                    <StatCard label="Completed" value={stats.completed} color="text-teal-600" />
-                    <StatCard label="Rejected" value={stats.rejected} color="text-red-600" />
+                    <StatCard label="አዲስ ጥያቄዎች" value={stats.newRequests} color="text-blue-600" />
+                    <StatCard label="በግምገማ ላይ" value={stats.underInspection} color="text-indigo-600" />
+                    <StatCard label="የጸደቁ" value={stats.approved} color="text-green-600" />
+                    <StatCard label="ያልጸደቁ" value={stats.disapproved} color="text-orange-600" />
+                    <StatCard label="አስኪያጅ በመጠባበቅ ላይ" value={stats.pendingManager} color="text-yellow-600" />
+                    <StatCard label="በሂደት ላይ" value={stats.inProgress} color="text-cyan-600" />
+                    <StatCard label="የተጠናቀቁ" value={stats.completed} color="text-teal-600" />
+                    <StatCard label="የተቀባይነት ያላገኙ" value={stats.rejected} color="text-red-600" />
                   </div>
                   <div className="bg-white rounded-lg shadow border p-4">
-                    <h3 className="text-base font-semibold mb-3">Requests awaiting your inspection</h3>
+                    <h3 className="text-base font-semibold mb-3">ግምገማ የሚጠብቁ ጥያቄዎች</h3>
                     {renderRequestTable(reviewQueue, true)}
                   </div>
                 </>
               )}
               {isManager && (
                 <>
-                  <h2 className="text-lg font-semibold">Fleet Manager Dashboard</h2>
+                  <h2 className="text-lg font-semibold">የባህሪ ስራ አስኪያጅ ዳሽቦርድ</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard label="Pending decisions" value={stats.pendingDecisions} color="text-yellow-600" />
-                    <StatCard label="Accepted" value={stats.accepted} color="text-emerald-600" />
-                    <StatCard label="Rejected" value={stats.rejected} color="text-red-600" />
-                    <StatCard label="In progress" value={stats.inProgress} color="text-cyan-600" />
-                    <StatCard label="Completed" value={stats.completed} color="text-teal-600" />
-                    <StatCard label="Returned to driver" value={stats.returnedToDriver} color="text-purple-600" />
+                    <StatCard label="በመጠባበቅ ላይ ያሉ ውሳኔዎች" value={stats.pendingDecisions} color="text-yellow-600" />
+                    <StatCard label="የተቀበሉ" value={stats.accepted} color="text-emerald-600" />
+                    <StatCard label="የተቀባይነት ያላገኙ" value={stats.rejected} color="text-red-600" />
+                    <StatCard label="በሂደት ላይ" value={stats.inProgress} color="text-cyan-600" />
+                    <StatCard label="የተጠናቀቁ" value={stats.completed} color="text-teal-600" />
+                    <StatCard label="ወደ ሹፌሩ የተመለሱ" value={stats.returnedToDriver} color="text-purple-600" />
                   </div>
                   <div className="bg-white rounded-lg shadow border p-4">
-                    <h3 className="text-base font-semibold mb-3">Requests awaiting your final decision</h3>
+                    <h3 className="text-base font-semibold mb-3">የመጨረሻ ውሳኔዎን የሚጠብቁ ጥያቄዎች</h3>
                     {renderRequestTable(pendingManager, true)}
                   </div>
                 </>
@@ -784,7 +804,7 @@ export default function MaintenanceApprovalPage() {
           {/* REVIEW QUEUE (maintenance team) */}
           {isMaintTeam && tab === "review" && (
             <div className="bg-white rounded-lg shadow border p-4">
-              <h2 className="text-lg font-semibold mb-3">Requests awaiting inspection</h2>
+              <h2 className="text-lg font-semibold mb-3">ግምገማ የሚጠብቁ ጥያቄዎች</h2>
               {renderRequestTable(reviewQueue, true)}
             </div>
           )}
@@ -792,7 +812,7 @@ export default function MaintenanceApprovalPage() {
           {/* PENDING (manager) */}
           {isManager && tab === "pending" && (
             <div className="bg-white rounded-lg shadow border p-4">
-              <h2 className="text-lg font-semibold mb-3">Pending final decisions</h2>
+              <h2 className="text-lg font-semibold mb-3">በመጠባበቅ ላይ ያሉ መጨረሻ ውሳኔዎች</h2>
               {renderRequestTable(pendingManager, true)}
             </div>
           )}
@@ -803,12 +823,12 @@ export default function MaintenanceApprovalPage() {
               <div className="flex flex-wrap gap-3 items-center">
                 <input
                   className="border rounded px-3 py-2 text-sm flex-1 min-w-[200px]"
-                  placeholder="Search by request ID, driver or plate…"
+                  placeholder="በጥያቄ ቁጥር፣ ሹፌር ወይም የመኪና ቁጥር ይፈልጉ…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
                 <select className="border rounded px-3 py-2 text-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                  <option value="">All statuses</option>
+                  <option value="">ሁሉም ሁኔታዎች</option>
                   {(Object.keys(STATUS_LABELS) as Status[]).map((s) => (
                     <option key={s} value={s}>{STATUS_LABELS[s]}</option>
                   ))}
