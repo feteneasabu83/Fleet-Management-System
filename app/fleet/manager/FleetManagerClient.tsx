@@ -705,7 +705,7 @@ export default function FleetManagerClient() {
             />
           )}
 
-          {activeTab === 'drivers' && <DriversTab drivers={drivers} onDriversUpdate={setDrivers} />}
+          {activeTab === 'drivers' && <DriversTab drivers={drivers} vehicles={vehicles} onDriversUpdate={setDrivers} />}
 
           {activeTab === 'requests' && (
             <RequestsTab requests={requests} onRequestsUpdate={setRequests} />

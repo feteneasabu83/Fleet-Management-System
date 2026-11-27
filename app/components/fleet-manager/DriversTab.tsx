@@ -7,10 +7,11 @@ import { Driver } from './types';
 
 interface DriversTabProps {
   drivers: Driver[];
+  vehicles?: any[];
   onDriversUpdate: (drivers: Driver[]) => void;
 }
 
-export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps) {
+export default function DriversTab({ drivers, vehicles = [], onDriversUpdate }: DriversTabProps) {
   const router = useRouter();
   const { show: toast } = useToast();
   const [driversLoading, setDriversLoading] = useState(false);
@@ -31,7 +32,17 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
     } catch {}
   }, []);
 
-  const isDriverAssigned = (d: Driver) => Boolean(d.assignedVehicle);
+  const assignedDriverIds = useMemo(() => {
+    const ids = new Set<string>();
+    (vehicles || []).forEach((v: any) => {
+      const uid = v?.user?.id;
+      if (uid) ids.add(String(uid));
+    });
+    return ids;
+  }, [vehicles]);
+
+  const isDriverAssigned = (d: Driver) =>
+    Boolean((d as any).assignedVehicle) || assignedDriverIds.has(String(d.id));
 
   const filteredDrivers = useMemo(() => {
     return drivers.filter((d) => {
@@ -239,8 +250,8 @@ export default function DriversTab({ drivers, onDriversUpdate }: DriversTabProps
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">የመኪና ምደባ</span>
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${driver.assignedVehicle ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-                    {driver.assignedVehicle ? 'ተመድቧል' : 'ያልተመደበ'}
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDriverAssigned(driver) ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {isDriverAssigned(driver) ? 'ተመድቧል' : 'ያልተመደበ'}
                   </span>
                 </div>
               </div>
