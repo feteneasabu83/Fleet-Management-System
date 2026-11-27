@@ -44,6 +44,7 @@ export default function FleetManagerClient() {
   const [assignmentRequests, setAssignmentRequests] = useState<AssignmentRequest[]>([])
   const [serviceRegistrations, setServiceRegistrations] = useState<any[]>([])
   const [fuelRequests, setFuelRequests] = useState<any[]>([])
+  const [fleetCosts, setFleetCosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
@@ -108,6 +109,30 @@ export default function FleetManagerClient() {
       }
     } catch {}
   }, [])
+
+  const loadFleetCosts = async () => {
+    try {
+      const token =
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('token') ||
+        ''
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+      const res = await fetch(`${apiBase}/api/fleet/costs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        setFleetCosts([])
+        return
+      }
+      const data = await res.json().catch(() => ({}))
+      const arr = data?.data || data?.items || data
+      setFleetCosts(Array.isArray(arr) ? arr : [])
+    } catch (err) {
+      console.error('Error fetching fleet costs:', err)
+      setFleetCosts([])
+    }
+  }
 
   const loadFuelRequests = async () => {
     try {
@@ -359,6 +384,7 @@ export default function FleetManagerClient() {
         loadAssignmentDetails(),
         loadServiceRegistrations(),
         loadFuelRequests(),
+        loadFleetCosts(),
       ])
     }
     loadData()
@@ -383,6 +409,27 @@ export default function FleetManagerClient() {
         return { month: `${m}/${y.slice(2)}`, ነዳጅ: Math.round(total) }
       })
   }, [fuelRequests])
+
+  const costAmount = (c: any) => {
+    const n = Number(c?.amount ?? c?.cost ?? c?.total ?? 0)
+    return Number.isFinite(n) ? n : 0
+  }
+  const costCategory = (c: any) => String(c?.category ?? c?.type ?? c?.name ?? '').toLowerCase()
+
+  const fuelCostTotal = useMemo(
+    () =>
+      fleetCosts
+        .filter((c) => /fuel|gas|petrol|diesel|ነዳጅ/.test(costCategory(c)))
+        .reduce((sum, c) => sum + costAmount(c), 0),
+    [fleetCosts]
+  )
+  const maintenanceCostTotal = useMemo(
+    () =>
+      fleetCosts
+        .filter((c) => /maint|service|repair|ጥገና/.test(costCategory(c)))
+        .reduce((sum, c) => sum + costAmount(c), 0),
+    [fleetCosts]
+  )
 
   const vehicleStatusData = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -537,6 +584,26 @@ export default function FleetManagerClient() {
               <p className="text-2xl font-bold text-slate-900">የጥገና ጥያቄዎች</p>
               <p className="mt-0.5 text-xs font-medium text-slate-500">ከሹፌሮች ይቀበሉ</p>
             </button>
+          </div>
+
+          {/* ── Cost Analysis ──────────────────────────────── */}
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium text-slate-500">ጠቅላላ መኪናዎች</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{stats.totalVehicles}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium text-slate-500">ጠቅላላ ሹፌሮች</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{drivers.length}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium text-slate-500">ጠቅላላ የነዳጅ ወጪ</p>
+              <p className="mt-1 text-2xl font-bold text-rose-600">{fuelCostTotal.toLocaleString('en-US')}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium text-slate-500">ጠቅላላ የጥገና ወጪ</p>
+              <p className="mt-1 text-2xl font-bold text-amber-600">{maintenanceCostTotal.toLocaleString('en-US')}</p>
+            </div>
           </div>
 
           {/* ── Report Charts ──────────────────────────────── */}
