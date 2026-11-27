@@ -722,84 +722,81 @@ export default function FleetManagerClient() {
           </div>
         )}
 
-        {/* ── Registered Vehicles Modal ───────────────────── */}
+        {/* ── Registered Vehicles — isolated full page ────── */}
         {showVehiclesModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-            onClick={() => setShowVehiclesModal(false)}
-          >
-            <div
-              className="flex max-h-[90vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">የተመዘገቡ መኪናዎች</h3>
-                  <p className="text-xs text-slate-500">{vehicles.length} መኪናዎች ተመዝግበዋል</p>
-                </div>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-50">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+              <div className="mb-4 flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setShowVehiclesModal(false)}
-                  className="rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-100"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
                 >
-                  ✕ ዝጋ
+                  ← ወደ ዳሽቦርድ ተመለስ
                 </button>
+                <div className="text-right">
+                  <h1 className="text-xl font-bold text-slate-900">የተመዘገቡ መኪናዎች</h1>
+                  <p className="text-xs text-slate-500">{vehicles.length} መኪናዎች ተመዝግበዋል</p>
+                </div>
               </div>
-              <div className="overflow-auto p-4">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      <th className="px-3 py-2">#</th>
-                      <th className="px-3 py-2">የመኪና ቁጥር</th>
-                      <th className="px-3 py-2">ማርክ / ሞዴል</th>
-                      <th className="px-3 py-2">አመት</th>
-                      <th className="px-3 py-2">ዓይነት</th>
-                      <th className="px-3 py-2">ነዳጅ አይነት</th>
-                      <th className="px-3 py-2">ሁኔታ</th>
-                      <th className="px-3 py-2">ተመድቦ ሹፌር</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {vehicles.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="px-3 py-8 text-center text-slate-400">
-                          ምንም መኪና አልተመዘገበም
-                        </td>
+
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <th className="px-4 py-3">#</th>
+                        <th className="px-4 py-3">የመኪና ቁጥር</th>
+                        <th className="px-4 py-3">ማርክ</th>
+                        <th className="px-4 py-3">ሞዴል</th>
+                        <th className="px-4 py-3">አመት</th>
+                        <th className="px-4 py-3">ዓይነት</th>
+                        <th className="px-4 py-3">ነዳጅ አይነት</th>
+                        <th className="px-4 py-3">ሁኔታ</th>
+                        <th className="px-4 py-3">ተመድቦ ሹፌር</th>
                       </tr>
-                    ) : (
-                      vehicles.map((v: any, i: number) => (
-                        <tr key={v.id} className="hover:bg-slate-50">
-                          <td className="px-3 py-2 text-slate-400">{i + 1}</td>
-                          <td className="px-3 py-2 font-mono font-semibold text-slate-900">
-                            {v.plate || v.licensePlate || v.id}
-                          </td>
-                          <td className="px-3 py-2">
-                            {[v.make, v.model].filter(Boolean).join(' ') || '—'}
-                          </td>
-                          <td className="px-3 py-2">{v.year || '—'}</td>
-                          <td className="px-3 py-2">{v.vehicleTypeName || v.vehicleType || '—'}</td>
-                          <td className="px-3 py-2">{v.fuelType || '—'}</td>
-                          <td className="px-3 py-2">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                String(v.status || '').toUpperCase() === 'AVAILABLE'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : String(v.status || '').toUpperCase() === 'ASSIGNED' || v.user
-                                    ? 'bg-blue-50 text-blue-700'
-                                    : 'bg-slate-100 text-slate-600'
-                              }`}
-                            >
-                              {v.user ? 'ተመድቧል' : v.status || 'ዝግጁ'}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2">
-                            {v.user ? `${v.user.firstName || ''} ${v.user.lastName || ''}`.trim() || '—' : '—'}
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {vehicles.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="px-4 py-10 text-center text-slate-400">
+                            ምንም መኪና አልተመዘገበም
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        vehicles.map((v: any, i: number) => (
+                          <tr key={v.id} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-slate-400">{i + 1}</td>
+                            <td className="px-4 py-3 font-mono font-semibold text-slate-900">
+                              {v.plate || v.licensePlate || v.id}
+                            </td>
+                            <td className="px-4 py-3">{v.make || '—'}</td>
+                            <td className="px-4 py-3">{v.model || '—'}</td>
+                            <td className="px-4 py-3">{v.year || '—'}</td>
+                            <td className="px-4 py-3">{v.vehicleTypeName || v.vehicleType || '—'}</td>
+                            <td className="px-4 py-3">{v.fuelType || '—'}</td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                  String(v.status || '').toUpperCase() === 'AVAILABLE'
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : String(v.status || '').toUpperCase() === 'ASSIGNED' || v.user
+                                      ? 'bg-blue-50 text-blue-700'
+                                      : 'bg-slate-100 text-slate-600'
+                                }`}
+                              >
+                                {v.user ? 'ተመድቧል' : v.status || 'ዝግጁ'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              {v.user ? `${v.user.firstName || ''} ${v.user.lastName || ''}`.trim() || '—' : '—'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
