@@ -159,6 +159,11 @@ export default function FleetCostsPage() {
     [filteredCosts]
   )
 
+  const distinctVehicleCount = useMemo(
+    () => new Set(filteredCosts.map((c) => c.vehicleId)).size,
+    [filteredCosts]
+  )
+
   const updateForm = (kind: CostKind, field: string, value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -486,6 +491,73 @@ export default function FleetCostsPage() {
               </button>
             )
           })}
+        </div>
+
+        {/* Summary containers */}
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                <Fuel className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">የነዳጅ ማጠቃለያ</h3>
+                <p className="text-xs text-slate-500">Fuel summary</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4 p-6">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ መዝገቦች</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">
+                  {activeKind === 'fuel' ? filteredCosts.length : '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ ወጪ</p>
+                <p className="mt-1 text-2xl font-bold text-rose-600">
+                  {activeKind === 'fuel' ? totalAmount.toLocaleString('en-US') : '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ልዩ መኪኖች</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">
+                  {activeKind === 'fuel' ? distinctVehicleCount : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <Wrench className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">የጥገና ወጪ ሁኔታ</h3>
+                <p className="text-xs text-slate-500">Maintenance cost status</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4 p-6">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">የጥገና ወጪ መዝገቦች</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">
+                  {activeKind === 'maintenance' ? filteredCosts.length : '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ጠቅላላ ወጪ</p>
+                <p className="mt-1 text-2xl font-bold text-amber-600">
+                  {activeKind === 'maintenance' ? totalAmount.toLocaleString('en-US') : '—'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">ልዩ መኪኖች</p>
+                <p className="mt-1 text-2xl font-bold text-indigo-600">
+                  {activeKind === 'maintenance' ? distinctVehicleCount : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Form + Table for active kind */}

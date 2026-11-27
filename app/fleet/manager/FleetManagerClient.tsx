@@ -29,7 +29,6 @@ export default function FleetManagerClient() {
   const [requests, setRequests] = useState<FleetRequestDTO[]>([])
   const [assignmentRequests, setAssignmentRequests] = useState<AssignmentRequest[]>([])
   const [serviceRegistrations, setServiceRegistrations] = useState<any[]>([])
-  const [fleetCosts, setFleetCosts] = useState<any[]>([])
   const [fuelRequests, setFuelRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -95,30 +94,6 @@ export default function FleetManagerClient() {
       }
     } catch {}
   }, [])
-
-  const loadFleetCosts = async () => {
-    try {
-      const token =
-        localStorage.getItem('accessToken') ||
-        localStorage.getItem('jwt') ||
-        localStorage.getItem('token') ||
-        ''
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/api/fleet/costs`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) {
-        setFleetCosts([])
-        return
-      }
-      const data = await res.json().catch(() => ({}))
-      const arr = data?.data || data?.items || data
-      setFleetCosts(Array.isArray(arr) ? arr : [])
-    } catch (err) {
-      console.error('Error fetching fleet costs:', err)
-      setFleetCosts([])
-    }
-  }
 
   const loadFuelRequests = async () => {
     try {
@@ -369,7 +344,6 @@ export default function FleetManagerClient() {
         loadRequests(),
         loadAssignmentDetails(),
         loadServiceRegistrations(),
-        loadFleetCosts(),
         loadFuelRequests(),
       ])
     }
@@ -402,33 +376,6 @@ export default function FleetManagerClient() {
       </div>
     )
   }
-
-  const costAmount = (c: any) => {
-    const n = Number(c?.amount ?? c?.cost ?? c?.total ?? 0)
-    return Number.isFinite(n) ? n : 0
-  }
-  const costCategory = (c: any) => String(c?.category ?? c?.type ?? c?.name ?? '').toLowerCase()
-
-  const maintenanceCosts = fleetCosts.filter((c) =>
-    /maint|service|repair|ጥገና/.test(costCategory(c))
-  )
-  const maintenanceCost = maintenanceCosts.reduce((sum, c) => sum + costAmount(c), 0)
-  const maintenanceCostCount = maintenanceCosts.length
-
-  const fuelCost = fleetCosts
-    .filter((c) => /fuel|gas|petrol|diesel|ነዳጅ/.test(costCategory(c)))
-    .reduce((sum, c) => sum + costAmount(c), 0)
-
-  const formatCost = (n: number) => n.toLocaleString('en-US')
-
-  const totalFuelLiters = fuelRequests.reduce((sum, r: any) => {
-    const n = Number(r?.amount ?? 0)
-    return sum + (Number.isFinite(n) ? n : 0)
-  }, 0)
-  const fueledCount = fuelRequests.filter((r: any) => {
-    const s = String(r?.status || '').toUpperCase()
-    return s === 'FUELED' || s === 'COMPLETED' || s === 'APPROVED'
-  }).length
 
   const statCards = [
     {
@@ -538,81 +485,6 @@ export default function FleetManagerClient() {
             </button>
           </div>
 
-          {/* ── Fuel Container ─────────────────────────────── */}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
-                  <Fuel className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">የነዳጅ ማጠቃለያ</h3>
-                  <p className="text-xs text-slate-500">Fuel summary</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push('/fleet/manager/costs?kind=fuel')}
-                className="rounded-lg bg-[#135a98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f4e84]"
-              >
-                ዝርዝር ይመልከቱ
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-4">
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ጠቅላላ የነዳጅ ጥያቄዎች</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{fuelRequests.length}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ጠቅላላ ነዳጅ (ሊትር)</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{totalFuelLiters.toLocaleString('en-US')}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ነዳጅ የተሞላላቸው</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-600">{fueledCount}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ጠቅላላ የነዳጅ ወጪ</p>
-                <p className="mt-1 text-2xl font-bold text-rose-600">{formatCost(fuelCost)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Maintenance Cost Status Container ──────────── */}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                  <Wrench className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">የጥገና ወጪ ሁኔታ</h3>
-                  <p className="text-xs text-slate-500">Maintenance cost status</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push('/fleet/manager/costs?kind=maintenance')}
-                className="rounded-lg bg-[#135a98] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f4e84]"
-              >
-                ዝርዝር ይመልከቱ
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3">
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">የጥገና ወጪ መዝገቦች</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{maintenanceCostCount}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ጠቅላላ የጥገና ወጪ</p>
-                <p className="mt-1 text-2xl font-bold text-amber-600">{formatCost(maintenanceCost)}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">ሰርቪስ የተደረገላቸው መኪኖች</p>
-                <p className="mt-1 text-2xl font-bold text-indigo-600">{servicedVehiclesCount}</p>
-              </div>
-            </div>
-          </div>
           </>
         ) : (
           /* ── Tab Content (deep links via ?tab=...) ────────── */
