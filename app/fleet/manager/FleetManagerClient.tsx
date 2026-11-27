@@ -498,7 +498,7 @@ export default function FleetManagerClient() {
         {activeTab === 'overview' ? (
           /* ── Dashboard: stat buttons + fuel container ──────── */
           <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {statCards.map((card) => (
               <button
                 key={card.label}
@@ -516,32 +516,28 @@ export default function FleetManagerClient() {
           </div>
 
           {/* ── Quick Action Buttons ──────────────────────── */}
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <button
               type="button"
               onClick={() => router.push('/fleet/manager/fuel-requests')}
-              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md"
+              className="group rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                 <Fuel className="h-5 w-5" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900">የነዳጅ ጥያቄዎች</p>
-                <p className="text-xs text-slate-500">{fuelRequests.length} ጥያቄዎች</p>
-              </div>
+              <p className="text-2xl font-bold text-slate-900">{fuelRequests.length}</p>
+              <p className="mt-0.5 text-xs font-medium text-slate-500">የነዳጅ ጥያቄዎች</p>
             </button>
             <button
               type="button"
               onClick={() => router.push('/fleet/maintenance-approval')}
-              className="group flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md"
+              className="group rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
                 <Wrench className="h-5 w-5" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900">የጥገና ጥያቄዎች</p>
-                <p className="text-xs text-slate-500">ከሹፌሮች የሚመጡ ጥያቄዎችን ይቀበሉ</p>
-              </div>
+              <p className="text-2xl font-bold text-slate-900">የጥገና ጥያቄዎች</p>
+              <p className="mt-0.5 text-xs font-medium text-slate-500">ከሹፌሮች ይቀበሉ</p>
             </button>
           </div>
 
