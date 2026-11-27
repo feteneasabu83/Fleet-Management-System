@@ -755,15 +755,6 @@ ${bodyInner}
       <div className="px-6 py-4 border-b flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">የመኪና መመደቢያ መዝገብ</h3>
         <div className="flex gap-2 items-center">
-          <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">
-            ጠቅላላ የተመደቡ መኪኖች: {totalAssigned}
-          </div>
-          <button
-            onClick={() => loadAssignmentDetails(assignPage)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Refresh Data
-          </button>
           <select
             onChange={(e) => {
               const value = e.target.value;
