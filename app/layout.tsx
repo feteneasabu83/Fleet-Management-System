@@ -6,7 +6,6 @@ import "./globals.css"
 import Footer from "@/app/components/footer"
 import AppHeader from "@/app/components/app-header"
 import SidebarContainer from "@/app/components/sidebar/sidebar-container"
-import RightSidebar from "@/app/components/right-sidebar"
 import { LocalizationProvider } from "@/app/hooks/use-localization"
 import { ToastProvider } from "@/app/components/toast-provider"
 import ToastView from "@/app/components/toast-view"
@@ -49,7 +48,6 @@ export default function RootLayout({
                   {children}
                 </div>
               </main>
-              <RightSidebar />
             </div>
             <Footer />
             <ToastView />
