@@ -110,7 +110,7 @@ export default function VerticalNavigation() {
 
   return (
     <div className="flex h-full flex-col">
-      <nav className="flex-1 space-y-2 overflow-y-auto px-3 pb-4 pt-12">
+      <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-4">
         <div className="space-y-0.5">
           {fleetItems.map((item) => {
             const active = isActive(item);

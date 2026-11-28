@@ -179,7 +179,7 @@ export default function AppHeader() {
   }, [])
 
   return (
-    <header style={{ width: "100%", background: "linear-gradient(90deg, #0f172a 0%, #1e293b 55%, #e2e8f0 100%)", borderBottom: "1px solid rgba(148,163,184,0.25)" }}>
+    <header style={{ width: "100%", background: "#000000", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
       <div style={{
         display: "flex",
         alignItems: "center",
@@ -211,7 +211,7 @@ export default function AppHeader() {
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             title={`Welcome ${userName}`}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#0f172a', padding: 0 }}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', padding: 0 }}
           >
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <span style={{
@@ -222,13 +222,13 @@ export default function AppHeader() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid rgba(15,23,42,0.25)'
+                border: '1px solid rgba(255,255,255,0.25)'
               }}>
                 <span role="img" aria-label="user">👤</span>
               </span>
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
-                <span style={{ color: '#0f172a', fontWeight: 700, fontSize: 12 }}>{userName}</span>
-                <span style={{ color: '#475569', fontSize: 11 }}>{roleLabel}</span>
+                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: 12 }}>{userName}</span>
+                <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>{roleLabel}</span>
               </span>
             </span>
           </button>
