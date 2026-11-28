@@ -2369,14 +2369,8 @@ async assignDriver(id: number, driverId: string, vehicleId: string) {
       }
     });
 
-    // Vehicles with overtime requests
-    const vehiclesWithOvertime = await this.prisma.vehicle.count({
-      where: {
-        overtimeRequests: {
-          some: {}
-        }
-      }
-    });
+    // Overtime requests were removed from the schema
+    const vehiclesWithOvertime = 0;
 
     return {
       utilizationRate: totalVehicles > 0 ? 
