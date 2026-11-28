@@ -8,6 +8,7 @@ import { $Enums, MaintenanceStatus, RequestDecisionStatus, FuelStatus } from '@p
 import { CreateVehicleReturnDto } from './dto/create-vehicle-return.dto';
 import { CreateFieldRequestDto } from './dto/create-field-request.dto';
 import { UpdateTripMetricsDto } from './dto/UpdateVehicleDto';
+import { SmsService } from '../common/sms.service';
 
 
 
@@ -38,7 +39,7 @@ export class FleetService {
   markNotificationAsRead(id: string) {
     throw new Error('Method not implemented.');
   }
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private sms: SmsService) {}
 
   // Vehicles
   async listVehicles(q?: string, type?: 'NEW' | 'USED') {
@@ -856,7 +857,7 @@ async createFleetRequest(body: CreateFleetRequestDto) {
     }
   }
 
-  return this.prisma.fleetRequest.create({
+  const request = await this.prisma.fleetRequest.create({
     data: {
       requestorId: body.requestorId,
       departmentId,
@@ -871,6 +872,43 @@ async createFleetRequest(body: CreateFleetRequestDto) {
       endTime: body.endTime ?? null,
     },
   });
+
+  // SMS notification to the department head(s) of the requestor's department
+  try {
+    const [requestor, deptHeads] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: body.requestorId } }),
+      departmentId
+        ? this.prisma.user.findMany({
+            where: {
+              departmentId,
+              role: 'Department_Head',
+              isActive: true,
+            },
+            select: { phone: true, firstName: true, lastName: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const requestorName = requestor
+      ? `${requestor.firstName || ''} ${requestor.lastName || ''}`.trim() || 'An employee'
+      : 'An employee';
+
+    const message =
+      `New vehicle request submitted by ${requestorName}. ` +
+      `Purpose: ${body.purpose || 'N/A'}. ` +
+      `Destination: ${body.destination || 'N/A'}. ` +
+      `Please review and approve it in the system.`;
+
+    await this.sms.sendSmsToMany(
+      deptHeads.map((h) => h.phone),
+      message,
+    );
+  } catch (err) {
+    // SMS failures must never break request creation
+    console.error('Failed to send department-head SMS:', err);
+  }
+
+  return request;
 }
 
 
@@ -1586,6 +1624,42 @@ async setRequestStatus(id: string, status: 'APPROVED' | 'REJECTED') {
     },
   });
 
+  // 3️⃣ SMS notifications
+  try {
+    const requestorName = request.requestor
+      ? `${request.requestor.firstName || ''} ${request.requestor.lastName || ''}`.trim() || 'An employee'
+      : 'An employee';
+
+    if (status === 'APPROVED') {
+      // Notify all active fleet managers that a request is ready for assignment
+      const fleetManagers = await this.prisma.user.findMany({
+        where: { role: 'Fleet_Manager', isActive: true },
+        select: { phone: true },
+      });
+
+      const message =
+        `Vehicle request #${request.id} approved. ` +
+        `Requestor: ${requestorName}. ` +
+        `Purpose: ${request.purpose || 'N/A'}. ` +
+        `Destination: ${request.destination || 'N/A'}. ` +
+        `Please assign a vehicle and driver.`;
+
+      await this.sms.sendSmsToMany(
+        fleetManagers.map((m) => m.phone),
+        message,
+      );
+    } else if (status === 'REJECTED') {
+      // Notify the requestor that their request was rejected
+      await this.sms.sendSms(
+        request.requestor?.phone,
+        `Your vehicle request #${request.id} (Purpose: ${request.purpose || 'N/A'}) has been rejected by the department head.`,
+      );
+    }
+  } catch (err) {
+    // SMS failures must never break the approval flow
+    console.error('Failed to send request-status SMS:', err);
+  }
+
   return request;
 }
   
@@ -1786,6 +1860,37 @@ async assignDriver(id: number, driverId: string, vehicleId: string) {
     }),
   ]);
 
+  // SMS notification to the requestor and the assigned driver
+  try {
+    const [requestor, driver, vehicle] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: updatedRequest.requestorId } }),
+      this.prisma.user.findUnique({ where: { id: driverId } }),
+      this.prisma.vehicle.findUnique({ where: { id: vehicleId } }),
+    ]);
+
+    const driverName = driver
+      ? `${driver.firstName || ''} ${driver.lastName || ''}`.trim() || 'Your driver'
+      : 'Your driver';
+    const plate = vehicle?.plate || 'N/A';
+
+    const requestorMsg =
+      `Your vehicle request #${id} has been assigned. ` +
+      `Driver: ${driverName}. Vehicle: ${plate}. ` +
+      `Please check the system for trip details.`;
+
+    const driverMsg =
+      `You have been assigned to vehicle request #${id}. ` +
+      `Vehicle: ${plate}. Please report to the fleet office.`;
+
+    await Promise.all([
+      this.sms.sendSms(requestor?.phone, requestorMsg),
+      this.sms.sendSms(driver?.phone, driverMsg),
+    ]);
+  } catch (err) {
+    // SMS failures must never break the assignment flow
+    console.error('Failed to send assignment SMS:', err);
+  }
+
   return { message: 'Driver assigned successfully', request: updatedRequest, vehicle: updatedVehicle };
 }
 
@@ -1951,6 +2056,27 @@ async assignDriver(id: number, driverId: string, vehicleId: string) {
           isRead: false,
         },
       });
+    }
+
+    // SMS notification to the requestor and the assigned driver (if any)
+    try {
+      const driver = vehicle.userId
+        ? await this.prisma.user.findUnique({ where: { id: vehicle.userId } })
+        : null;
+
+      const smsMessage =
+        `Vehicle assigned for your request #${request.id}. ` +
+        `Vehicle: ${vehicle.plate || 'N/A'}. ` +
+        `Destination: ${destination}. ` +
+        `Driver: ${driver ? `${driver.firstName || ''} ${driver.lastName || ''}`.trim() || 'N/A' : 'N/A'}.`;
+
+      await Promise.all([
+        this.sms.sendSms(request.requestor?.phone, smsMessage),
+        driver ? this.sms.sendSms(driver.phone, smsMessage) : Promise.resolve(false),
+      ]);
+    } catch (err) {
+      // SMS failures must never break the assignment flow
+      console.error('Failed to send assignment SMS:', err);
     }
 
     return updatedVehicle;

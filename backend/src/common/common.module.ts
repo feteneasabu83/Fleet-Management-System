@@ -5,6 +5,7 @@ import { LocalizationService } from "./localization.service"
 import { EmailService } from "./email.service"
 import { NotificationService } from "./notification.service"
 import { AuditService } from "./audit.service"
+import { SmsService } from "./sms.service"
 
 @Global()
 @Module({
@@ -14,12 +15,14 @@ import { AuditService } from "./audit.service"
     EmailService,
     NotificationService,
     AuditService,
+    SmsService,
   ],
   exports: [
     LocalizationService,
     EmailService,
     NotificationService,
     AuditService,
+    SmsService,
   ],
 })
 export class CommonModule {}
